@@ -42,7 +42,7 @@ namespace LambdaLifter.Cli
                 lastState = map.ToString();
                 Console.Write(map.ToString());                
                 map.ExecuteTurn(controller.GetNextMove());
-                Thread.Sleep(100);
+                //Thread.Sleep(100);
             }
             Console.Clear();
             Console.WriteLine(map.ToString());

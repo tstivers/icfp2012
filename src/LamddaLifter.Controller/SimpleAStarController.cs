@@ -45,6 +45,7 @@ namespace LamddaLifter.Controller
             
             if (_commands == null)
             {
+                var routeFinder = new SimpleAStar(Map.Clone());
                 _commands = routeFinder.GetRouteTo(Map.Lifts[0]);
             }
 
