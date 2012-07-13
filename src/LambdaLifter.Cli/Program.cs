@@ -36,7 +36,7 @@ namespace LambdaLifter.Cli
             var controller = new SimpleAStarController(map);
             string lastState = null;
 
-            while (lastState != map.ToString() && map.State == MapState.Valid)
+            while (map.State == MapState.Valid)
             {
                 Console.Clear();
                 lastState = map.ToString();

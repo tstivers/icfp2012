@@ -46,7 +46,45 @@ namespace LambdaLifter.Model
                 throw new InvalidMoveException(point, null);
 
             cells[point.X, point.Y] = type;
-        }      
+        }             
+ 
+        public static bool IsValidMove(this CellType[,] cells, Point start, Point end)
+        {
+            if (cells.At(end).IsTraversible())
+            {
+                // don't let rocks fall on us
+                if (cells.At(end).IsEmpty() && cells.At(end.Up()).IsRock())
+                    return false;
+
+                // even if we're moving down
+                if (cells.At(start.Up()).IsRock() && start.Down() == end)
+                    return false;
+
+                // diagonals too!
+                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmpty() && cells.At(end.Right()).IsRock())                
+                    return false;
+
+                // diagonals too!
+                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Up()).IsEmpty() && (cells.At(end.Left()).IsRock() || cells.At(end.Left()).IsLambda()))
+                    return false;
+
+                if (cells.At(end.Up()).IsRock() && (!cells.At(end.Left()).IsTraversible() || !cells.At(end.Right()).IsTraversible()))
+                    return false;
+
+                return true;
+            }
+
+            if (cells.At(end).IsRock())
+            {
+                if (start.Right() == end && cells.At(end.Right()).IsEmpty())
+                    return true;
+                if (start.Left() == end && cells.At(end.Left()).IsEmpty())
+                    return true;
+            }
+
+            return false;
+
+        }
 
         public static bool IsRock(this CellType cell)
         {
@@ -63,9 +101,9 @@ namespace LambdaLifter.Model
             return cell == CellType.Lambda;
         }
 
-        public static bool IsValidMove(this CellType cell)
+        public static bool IsTraversible(this CellType cell)
         {
-            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift;
+            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot;
         }
 
     }

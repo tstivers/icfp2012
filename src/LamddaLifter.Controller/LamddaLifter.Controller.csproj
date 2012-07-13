@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="C5">
+    <Reference Include="C5, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\bin\C5.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -54,9 +54,6 @@
       <Project>{1899439A-8327-4625-AC8B-F7667873FE81}</Project>
       <Name>LambdaLifter.Model</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

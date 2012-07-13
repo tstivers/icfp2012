@@ -16,14 +16,17 @@ namespace LamddaLifter.Controller
 
         public override RobotCommand GetNextMove()
         {
-            _commands = null;
+            //if (_commands != null && _commands.Count > 0 && Map.IsValidCommand(_commands.Peek()))
+            //    return _commands.Dequeue();
 
-            var routeFinder = new SimpleAStar(Map);
+            _commands = null;            
 
             foreach (var lambda in Map.Lambdas)
             {
                 if (Map.Cells.At(lambda.Up()).IsRock())
                     continue;
+
+                var routeFinder = new SimpleAStar(Map.Clone());
                 var route = routeFinder.GetRouteTo(lambda);
                 if (_commands == null || (route != null && route.Count < _commands.Count))
                     _commands = route;
@@ -32,7 +35,8 @@ namespace LamddaLifter.Controller
             if (_commands == null)
             {
                 foreach (var lambda in Map.Lambdas)
-                {                    
+                {
+                    var routeFinder = new SimpleAStar(Map.Clone());
                     var route = routeFinder.GetRouteTo(lambda);
                     if (_commands == null || (route != null && route.Count < _commands.Count))
                         _commands = route;

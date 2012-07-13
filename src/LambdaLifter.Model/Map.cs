@@ -83,6 +83,7 @@ namespace LambdaLifter.Model
         {
             Lambdas = new List<Point>(map.Lambdas);
             Lifts = new List<Point>(map.Lifts);
+            _cells = new CellType[map.Cells.GetLength(0), map.Cells.GetLength(1)];
             Array.Copy(map.Cells, _cells, _cells.Length);
             Width = map.Width;
             Height = map.Height;
@@ -188,6 +189,9 @@ namespace LambdaLifter.Model
 
         private void Simulate()
         {
+            if (State != MapState.Valid)
+                return;
+
             var newState = new CellType[Width,Height];
             for (var y = 0; y < Height; y++)
             {
@@ -245,20 +249,37 @@ namespace LambdaLifter.Model
             _cells = newState;
         }
 
+        public bool IsValidCommand(RobotCommand command)
+        {
+            switch (command)
+            {
+                case RobotCommand.Up:
+                    return Cells.IsValidMove(RobotPosition, RobotPosition.Up());
+                case RobotCommand.Down:
+                    return Cells.IsValidMove(RobotPosition, RobotPosition.Down());
+                case RobotCommand.Left:
+                    return Cells.IsValidMove(RobotPosition, RobotPosition.Left());
+                case RobotCommand.Right:
+                    return Cells.IsValidMove(RobotPosition, RobotPosition.Right());
+                default:
+                    return true;
+            }
+        }
+
         public Point[] Neighbors(Point point)
         {
             var neighbors = new List<Point>();
             
-            if(Cells.At(point.Up()).IsValidMove())
+            if(Cells.IsValidMove(point, point.Up()))
                 neighbors.Add(point.Up());
 
-            if (Cells.At(point.Down()).IsValidMove())
+            if (Cells.IsValidMove(point, point.Down()))
                 neighbors.Add(point.Down());
 
-            if (Cells.At(point.Left()).IsValidMove())
+            if (Cells.IsValidMove(point, point.Left()))
                 neighbors.Add(point.Left());
 
-            if (Cells.At(point.Right()).IsValidMove())
+            if (Cells.IsValidMove(point, point.Right()))
                 neighbors.Add(point.Right());
 
             return neighbors.ToArray();
