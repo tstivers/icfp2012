@@ -135,7 +135,7 @@ namespace LambdaLifter.Model
             }
         }
 
-        public void ExecuteTurn(RobotCommand command)
+        public RobotCommand ExecuteTurn(RobotCommand command)
         {
             switch (command)
             {
@@ -157,6 +157,7 @@ namespace LambdaLifter.Model
             }
 
             Simulate();
+            return command;
         }
 
         private void MoveRobotTo(RobotCommand direction, Point destPos)
@@ -171,10 +172,14 @@ namespace LambdaLifter.Model
                 if (direction == RobotCommand.Left && Cells.At(destPos.Left()) == CellType.Empty)
                 {
                     Cells.Set(destPos.Left(), CellType.Rock);
+                    Rocks.Remove(destPos);
+                    Rocks.Add(destPos.Left());
                 }
                 else if (direction == RobotCommand.Right && Cells.At(destPos.Right()) == CellType.Empty)
                 {
                     Cells.Set(destPos.Right(), CellType.Rock);
+                    Rocks.Remove(destPos);
+                    Rocks.Add(destPos.Right());
                 }
                 else
                 {

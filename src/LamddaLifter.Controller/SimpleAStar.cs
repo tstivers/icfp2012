@@ -88,7 +88,7 @@ namespace LamddaLifter.Controller
                         return float.MaxValue;
                     return 1;
                 case CellType.Rock:
-                    return 2;
+                    return float.MaxValue;
                 case CellType.OpenLift:
                     return 0;
                 case CellType.ClosedLift:

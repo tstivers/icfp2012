@@ -10,6 +10,7 @@ namespace LamddaLifter.Controller
     public class SimpleAStarController : ControllerBase
     {
         private Queue<RobotCommand> _commands = new Queue<RobotCommand>();
+        private RobotCommand _finalCommand = RobotCommand.Abort;
  
         public SimpleAStarController(Map map) : base(map)
         {
@@ -47,8 +48,15 @@ namespace LamddaLifter.Controller
 
         public override RobotCommand GetNextMove()
         {
-            if (_commands != null && _commands.Count > 0 && !Map.RocksMoved)
-                return _commands.Dequeue();
+            //if (_commands != null && _commands.Count > 0 && !Map.RocksMoved)
+            //    return _commands.Dequeue();
+
+            if (_commands != null && _commands.Count == 0 && _finalCommand != RobotCommand.Abort)
+            {
+                var temp = _finalCommand;
+                _finalCommand = RobotCommand.Abort;
+                return temp;
+            }
 
             _commands = null;
 
@@ -124,6 +132,7 @@ namespace LamddaLifter.Controller
                         if (route != null)
                         {
                             _commands = route;
+                            _finalCommand = RobotCommand.Right;
                             break;
                         }
                     }
@@ -133,8 +142,23 @@ namespace LamddaLifter.Controller
                         if (route != null)
                         {
                             _commands = route;
+                            _finalCommand = RobotCommand.Left;
                             break;
                         }
+                    }
+                    else if (Map.Cells.At(rock.Right()).IsEarth())
+                    {
+                        var route = routeFinder.GetRouteTo(rock.Right());
+                        if (route != null)
+                            _commands = route;
+                        break;
+                    }
+                    else if (Map.Cells.At(rock.Left()).IsEarth())
+                    {
+                        var route = routeFinder.GetRouteTo(rock.Left());
+                        if (route != null)
+                            _commands = route;
+                        break;
                     }
                     else if (Map.Cells.At(rock.Down()).IsTraversible())
                     {

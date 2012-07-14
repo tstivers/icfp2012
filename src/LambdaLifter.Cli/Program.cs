@@ -33,24 +33,39 @@ namespace LambdaLifter.Cli
                 mapText = File.ReadAllLines(args[0]);
             }
 
+            TextWriter outfile = null;
+            if (args.Length > 1)
+            {
+                outfile = new StreamWriter(args[1]);
+            }
+
             var map = new Map(mapText);
             var controller = new SimpleAStarController(map);
             string lastState = null;
             var sw = new Stopwatch();
             sw.Start();
-            // controller.GenerateMoves();            
+            // controller.GenerateMoves();
+            int moves = 0;
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 120 * 1000)
             {
                 Console.Clear();
-                lastState = map.ToString();
-                Console.Write(map.ToString());                
-                map.ExecuteTurn(controller.GetNextMove());
-                Thread.Sleep(200);
+                //lastState = map.ToString();
+                Console.Write(map.ToString());
+                if (outfile != null)
+                {
+                    outfile.Write((char) map.ExecuteTurn(controller.GetNextMove()));
+                    outfile.Flush();
+                }
+                else
+                    map.ExecuteTurn(controller.GetNextMove());
+                //Thread.Sleep(200);
+                moves++;
             }
             Console.Clear();
             Console.WriteLine(map.ToString());
             Console.WriteLine("MapState: {0}", map.State);
             Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
+            Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
         }
     }
 }

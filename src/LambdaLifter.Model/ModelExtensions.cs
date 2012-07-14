@@ -91,6 +91,11 @@ namespace LambdaLifter.Model
             return cell == CellType.Rock;
         }
 
+        public static bool IsEarth(this CellType cell)
+        {
+            return cell == CellType.Earth;
+        }
+
         public static bool IsEmpty(this CellType cell)
         {
             return cell == CellType.Empty;
