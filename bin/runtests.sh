@@ -1,1 +1,1 @@
-find ../maps -name *.map -exec mono client.exe < {} \;
+find ../maps -name *.map -exec mono client.exe \< {} \;
