@@ -20,11 +20,28 @@ namespace LambdaLifter.Cli
             return Type.GetType("Mono.Runtime") != null;
         }
 
+        static void StartHandler()
+        {
+            new Thread(TerminateHandler).Start();
+        }
+
+        static void TerminateHandler()
+        {
+            Console.WriteLine("Initializing Handler for SIGINT");
+            var signal = new UnixSignal(Signum.SIGINT);
+            while (signal.WaitOne())
+            {
+                Console.WriteLine("Control-C Pressed!");
+                break;
+            }
+            Console.WriteLine("handler Terminated");
+        }
+
         static void Main(string[] args)
         {
             UnixSignal signal = null;
             if (IsRunningOnMono())
-                return;
+                StartHandler();
 
             string[] mapText;            
 
@@ -57,7 +74,7 @@ namespace LambdaLifter.Cli
             sw.Start();
             // controller.GenerateMoves();
             int moves = 0;            
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height && (signal == null || !signal.IsSet))
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height)
             {
                 Console.Clear();                
                 Console.Write(map.ToString());
