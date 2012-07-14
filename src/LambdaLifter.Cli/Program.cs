@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using LambdaLifter.Model;
 using LamddaLifter.Controller;
@@ -65,7 +66,10 @@ namespace LambdaLifter.Cli
             Console.WriteLine("MapState: {0}", map.State);
             Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
             Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
-            Console.WriteLine("Score: {0}", map.Score);
+            if (Regex.IsMatch(args[0], @"tests\\"))
+                Console.WriteLine("score (test): {0}", map.Score);
+            else
+                Console.WriteLine("Score: {0}", map.Score);
         }
     }
 }
