@@ -50,6 +50,13 @@ namespace LamddaLifter.Controller
             }
 
             if (_commands == null)
+            {
+                var temp = Map.Clone();
+                temp.ExecuteTurn(RobotCommand.Wait);
+                return RobotCommand.Wait;
+            }
+
+            if (_commands == null)
                 return RobotCommand.Abort;
 
             return _commands.Dequeue();
