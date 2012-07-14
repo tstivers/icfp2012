@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using LambdaLifter.Model;
 
-namespace LamddaLifter.Controller
+namespace LambdaLifter.Controller
 {
     public abstract class ControllerBase
     {

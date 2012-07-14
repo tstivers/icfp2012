@@ -8,8 +8,8 @@
     <ProjectGuid>{7EC52D17-7828-41E5-ABD5-50290D21EBCE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LamddaLifter.Controller</RootNamespace>
-    <AssemblyName>LamddaLifter.Controller</AssemblyName>
+    <RootNamespace>LambdaLifter.Controller</RootNamespace>
+    <AssemblyName>LambdaLifter.Controller</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

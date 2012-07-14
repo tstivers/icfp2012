@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LambdaLifter.Visualizer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LambdaLifter.Cli", "LambdaLifter.Cli\LambdaLifter.Cli.csproj", "{4BB7197E-0F33-4E07-BBFA-436B400487A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LamddaLifter.Controller", "LamddaLifter.Controller\LamddaLifter.Controller.csproj", "{7EC52D17-7828-41E5-ABD5-50290D21EBCE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LambdaLifter.Controller", "LambdaLifter.Controller\LambdaLifter.Controller.csproj", "{7EC52D17-7828-41E5-ABD5-50290D21EBCE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LambdaLifter.Utility", "LambdaLifter.Utility\LambdaLifter.Utility.csproj", "{06549464-C0BB-46AC-B55E-E2AE5A4ECB74}"
 EndProject

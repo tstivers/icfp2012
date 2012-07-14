@@ -52,9 +52,9 @@
       <Project>{1899439A-8327-4625-AC8B-F7667873FE81}</Project>
       <Name>LambdaLifter.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LamddaLifter.Controller\LamddaLifter.Controller.csproj">
+    <ProjectReference Include="..\LambdaLifter.Controller\LambdaLifter.Controller.csproj">
       <Project>{7EC52D17-7828-41E5-ABD5-50290D21EBCE}</Project>
-      <Name>LamddaLifter.Controller</Name>
+      <Name>LambdaLifter.Controller</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using LambdaLifter.Model;
-using LamddaLifter.Controller;
-using Mono.Unix;
-using Mono.Unix.Native;
+using LambdaLifter.Controller;
 
 namespace LambdaLifter.Cli
 {
@@ -18,35 +13,10 @@ namespace LambdaLifter.Cli
         public static bool IsRunningOnMono()
         {
             return Type.GetType("Mono.Runtime") != null;
-        }
-
-        static void StartHandler()
-        {
-            new Thread(TerminateHandler).Start();
-        }
-
-        static void TerminateHandler()
-        {
-            Console.WriteLine("Initializing Handler for SIGINT");
-            var signal = new UnixSignal[]
-                             {
-                                 new UnixSignal(Mono.Unix.Native.Signum.SIGINT),
-                                 new UnixSignal(Mono.Unix.Native.Signum.SIGHUP)
-                             } ;
-            while (true)
-            {
-                UnixSignal.WaitAny(signal);
-                Process.GetCurrentProcess().Kill();
-                Console.WriteLine("Control-C Pressed!");                
-            }
-            Console.WriteLine("handler Terminated");
-        }
+        }       
 
         static void Main(string[] args)
         {            
-            if (IsRunningOnMono())
-                StartHandler();
-
             string[] mapText;            
 
             if (args.Length < 1)
@@ -102,7 +72,5 @@ namespace LambdaLifter.Cli
             else
                 Console.WriteLine("Score: {0}", map.Score);
         }
-
-    
     }
 }
