@@ -13,8 +13,11 @@ namespace LambdaLifter.Cli
 {
     class Program
     {
+        public static volatile bool interrupted;
+
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
             string[] mapText;            
 
             if (args.Length < 1)
@@ -47,7 +50,7 @@ namespace LambdaLifter.Cli
             // controller.GenerateMoves();
             int moves = 0;
             int score = 0;
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height)
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height && !interrupted)
             {
                 Console.Clear();                
                 Console.Write(map.ToString());
@@ -70,6 +73,12 @@ namespace LambdaLifter.Cli
                 Console.WriteLine("score (test): {0}", map.Score);
             else
                 Console.WriteLine("Score: {0}", map.Score);
+        }
+
+        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Sigint caught!");
+            interrupted = true;
         }
     }
 }
