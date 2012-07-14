@@ -73,7 +73,7 @@ namespace LambdaLifter.Cli
             Console.WriteLine("MapState: {0}", map.State);
             Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
             Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
-            if (Regex.IsMatch(args[0], @"tests\\"))
+            if (Regex.IsMatch(args[0], @"tests(\\|/)"))
                 Console.WriteLine("score (test): {0}", map.Score);
             else
                 Console.WriteLine("Score: {0}", map.Score);
