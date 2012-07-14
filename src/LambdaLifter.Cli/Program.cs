@@ -28,7 +28,7 @@ namespace LambdaLifter.Cli
         static void TerminateHandler()
         {
             Console.WriteLine("Initializing Handler for SIGINT");
-            var signal = new UnixSignal(Signum.SIGINT);
+            var signal = new UnixSignal(Signum.SIGHUP);
             while (signal.WaitOne())
             {
                 Console.WriteLine("Control-C Pressed!");
@@ -38,8 +38,7 @@ namespace LambdaLifter.Cli
         }
 
         static void Main(string[] args)
-        {
-            UnixSignal signal = null;
+        {            
             if (IsRunningOnMono())
                 StartHandler();
 
