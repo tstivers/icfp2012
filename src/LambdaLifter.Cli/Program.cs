@@ -72,8 +72,17 @@ namespace LambdaLifter.Cli
             {
                 queue.Enqueue(tempMap.ExecuteTurn(tempController.GetNextMove()));
                 moves++;
-                if (tempMap.Score > bestScore)
+                if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
+                {
                     bestTurn = moves;
+                    bestScore = tempMap.AbortScore;  
+                    //Console.WriteLine(tempMap.AbortScore);
+                }
+                else if (tempMap.State == MapState.Won && tempMap.Score > bestScore)
+                {
+                    bestTurn = moves;
+                    bestScore = tempMap.Score;
+                }
             }
 
             queue.Enqueue(RobotCommand.Abort);
@@ -88,15 +97,10 @@ namespace LambdaLifter.Cli
             }
 
             moves = 0;
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves  < bestTurn)
-            {              
-                if (outfile != null)
-                {
-                    outfile.Write((char)map.ExecuteTurn(controller.GetNextMove()));
-                    outfile.Flush();
-                }
-                else if (contest)
-                    Console.Write((char)map.ExecuteTurn(controller.GetNextMove()));
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves <= bestTurn)
+            {
+                if (moves == bestTurn)
+                    map.ExecuteTurn(RobotCommand.Abort);
                 else
                     map.ExecuteTurn(queue.Dequeue());
 
@@ -104,7 +108,7 @@ namespace LambdaLifter.Cli
                 {
                     SafeClear();
                     Console.Write(map.ToString());
-                    Console.WriteLine("ControllerState: {0}", controller.State);                                        
+                    Console.WriteLine("ControllerState: {0}", controller.State);
                     Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
                 }
 
@@ -119,7 +123,7 @@ namespace LambdaLifter.Cli
                 else
                     Console.WriteLine("Score: {0}", map.Score);
 
-
+                Console.WriteLine("Best Score: {0}", bestScore);
             }
 
             if (map.State == MapState.Valid && contest)

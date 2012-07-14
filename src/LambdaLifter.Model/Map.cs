@@ -144,6 +144,14 @@ namespace LambdaLifter.Model
             }
         }
 
+        public int AbortScore
+        {
+            get
+            {
+                return Score + LambdasCollected * 25;
+            }
+        }
+
         public RobotCommand ExecuteTurn(RobotCommand command)
         {
             RocksMoved = false;
@@ -163,7 +171,7 @@ namespace LambdaLifter.Model
                     break;
                 case RobotCommand.Abort:
                     State = MapState.Aborted;
-                    Score += LambdasCollected*25;
+                    Score = AbortScore;
                     break;
             }
 
