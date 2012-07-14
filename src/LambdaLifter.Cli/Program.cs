@@ -28,7 +28,7 @@ namespace LambdaLifter.Cli
         static void TerminateHandler()
         {
             Console.WriteLine("Initializing Handler for SIGINT");
-            var signal = new UnixSignal[] {new UnixSignal(Mono.Unix.Native.Signum.SIGINT)} ;
+            var signal = new UnixSignal[] {new UnixSignal(Mono.Unix.Native.Signum.SIGHUP)} ;
             while (true)
             {
                 UnixSignal.WaitAny(signal);
