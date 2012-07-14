@@ -19,6 +19,7 @@ namespace LambdaLifter.Cli
         {            
             string[] mapText;
             bool contest = false;
+            int timelimit = 140;
 
             if (args.Length < 1)
             {
@@ -44,13 +45,16 @@ namespace LambdaLifter.Cli
                 outfile = new StreamWriter(args[1]);
             }
 
+            if (!contest)
+                timelimit = 30;
+
             var map = new Map(mapText);
             var controller = new SimpleAStarController(map);            
             var sw = new Stopwatch();
             sw.Start();
             // controller.GenerateMoves();
             int moves = 0;            
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height)
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < map.Width*map.Height)
             {
                 if (!contest)
                 {
@@ -71,6 +75,9 @@ namespace LambdaLifter.Cli
                 //Thread.Sleep(200);
                 moves++;
             }
+
+            if (map.State == MapState.Valid && contest)
+                Console.Write((char)RobotCommand.Abort);
 
             if (!contest)
             {
