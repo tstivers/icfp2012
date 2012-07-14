@@ -15,37 +15,7 @@ namespace LambdaLifter.Controller
         public SimpleAStarController(Map map)
             : base(map)
         {
-        }
-
-        public Queue<RobotCommand> GenerateMoves()
-        {
-            Map start = Map.Clone();
-
-            var commands = new Queue<RobotCommand>();
-
-            while (Map.State != MapState.Won)
-            {
-                while (Map.State == MapState.Valid)
-                {
-                    var move = GetNextMove();
-                    commands.Enqueue(move);
-                    Map.ExecuteTurn(move);
-                }
-
-                if (Map.State == MapState.Won)
-                {
-                    Map = start.Clone();
-                    break;
-                }
-
-                var newMap = start.Clone();
-                Map.Lambdas.ForEach(x => newMap.PriorityLambdas.Add(x));
-                Map = newMap;
-                return commands;
-            }
-
-            return commands;
-        }
+        }      
 
         public override RobotCommand GetNextMove()
         {
@@ -54,69 +24,42 @@ namespace LambdaLifter.Controller
 
             _commands = null;
 
-            var routeFinder = new SimpleAStar(Map);
+            var routeFinder = new AStarRouteFinder(Map);           
 
-            foreach (var lambda in Map.PriorityLambdas)
+            // first we try to get to a lambda
+            if (Map.Lambdas.Count > 0)
             {
-                if (Map.Cells.At(lambda.Up()).IsRock())
-                    continue;
-                
-                var route = routeFinder.GetRouteTo(lambda);
-                if (_commands == null || (route != null && route.Count < _commands.Count))
-                {
-                    _commands = route;
-                    State = String.Format("Navigating to PriorityLambda at {0}", lambda);
-                }
-            }
-
-            if (_commands == null)
-            {
-                foreach (var lambda in Map.PriorityLambdas)
+                var routes = new Dictionary<Queue<RobotCommand>, int>();
+                foreach (var lambda in Map.Lambdas)
                 {                    
                     var route = routeFinder.GetRouteTo(lambda);
-                    if (_commands == null || (route != null && route.Count < _commands.Count))
-                    {
-                        _commands = route;
-                        State = String.Format("Navigating to PriorityLambda at {0}", lambda);
-                    }
-                }
-            }
 
-            if (_commands == null)
-            {
-                foreach (var lambda in Map.Lambdas)
-                {
-                    if (Map.Cells.At(lambda.Up()).IsRock())
+                    if (route == null)
                         continue;
-                    
-                    var route = routeFinder.GetRouteTo(lambda);
-                    if (_commands == null || (route != null && route.Count < _commands.Count))
-                    {
-                        _commands = route;
-                        State = String.Format("Navigating to Lambda at {0}", lambda);
-                    }
+
+                    var score = route.Count;
+                    if (routeFinder.UsesPortals)
+                        score *= 10;
+                    else if (routeFinder.PushesRocks)
+                        score *= 5;
+                    else if (routeFinder.DisturbsRocks)
+                        score *= 3;
+
+                    routes.Add(route, score);
                 }
+
+                if (routes.Count > 0)
+                    _commands = routes.Aggregate((best, route) => best = route.Value < best.Value ? route : best).Key;
             }
 
-            if (_commands == null)
-            {
-                foreach (var lambda in Map.Lambdas)
-                {                    
-                    var route = routeFinder.GetRouteTo(lambda);
-                    if (_commands == null || (route != null && route.Count < _commands.Count))
-                    {
-                        _commands = route;
-                        State = String.Format("Navigating to Lambda at {0}", lambda);
-                    }
-                }
-            }
-
-            if (_commands == null && Map.Lambdas.Count == 0)
+            // if all lambdas are gone, try to get to the lift
+            if (Map.Lambdas.Count == 0)
             {                
                 _commands = routeFinder.GetRouteTo(Map.Lifts[0]);
                 State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);
             }
 
+            // can't get lambas or a lift, wait for falling rocks to stop
             if (_commands == null)
             {
                 var temp = Map.Clone();
@@ -128,6 +71,7 @@ namespace LambdaLifter.Controller
                 }
             }
 
+            // try to move a rock as a last ditch effort
             if (_commands == null)
             {                
                 foreach (var rock in Map.MoveableRocks)
@@ -189,29 +133,12 @@ namespace LambdaLifter.Controller
                 }
             }
 
-            //if (_commands == null)
-            //{
-            //    foreach (var neighbor in Map.Neighbors(Map.RobotPosition))
-            //    {
-            //        var routeFinder = new SimpleAStar(Map.Clone());
-            //        var route = routeFinder.GetRouteTo(neighbor);
-            //        if (_commands == null || (route != null && route.Count < _commands.Count))
-            //            _commands = route;                    
-            //    }
-            //}
-
+            // can't get anywhere or move any rocks, give up
             if (_commands == null)
             {
                 State = "Nothing I can do...";
                 return RobotCommand.Abort;
-            }
-
-            if (Map.Cells.At(Map.RobotPosition.Move(_commands.Peek())).IsLambda())
-            {
-                var cmd = _commands.Dequeue();
-                _commands = null;
-                return cmd;
-            }
+            }            
 
             return _commands.Dequeue();
         }

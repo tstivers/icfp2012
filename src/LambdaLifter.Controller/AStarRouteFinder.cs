@@ -7,11 +7,15 @@ using LambdaLifter.Model;
 
 namespace LambdaLifter.Controller
 {
-    class SimpleAStar
+    class AStarRouteFinder
     {
         private readonly Map _map;
 
-        public SimpleAStar(Map map)
+        public bool UsesPortals { get; set; }
+        public bool PushesRocks { get; set; }
+        public bool DisturbsRocks { get; set; }
+
+        public AStarRouteFinder(Map map)
         {
             _map = map;
         }
@@ -33,6 +37,10 @@ namespace LambdaLifter.Controller
 
         public Queue<RobotCommand> GetRouteTo(Point goal)
         {
+            PushesRocks = false;
+            DisturbsRocks = false;
+            UsesPortals = false;
+
             var start = _map.RobotPosition;
 
             if (start == goal)
@@ -75,27 +83,13 @@ namespace LambdaLifter.Controller
 
         private float MoveCost(Point current, Point neighbor)
         {
-            switch (_map.Cells.At(neighbor))
-            {
-                case CellType.Empty:
-                    return 0;
-                case CellType.Lambda:
-                    if (_map.Cells.At(neighbor.Up()) == CellType.Rock)
-                        return float.MaxValue;
-                    return 0;
-                case CellType.Earth:
-                    if (_map.Cells.At(neighbor.Up()) == CellType.Rock)
-                        return float.MaxValue;
-                    return 1;
-                case CellType.Rock:
-                    return 100;
-                case CellType.OpenLift:
-                    return 0;
-                default:
-                    if (_map.Cells.At(neighbor).IsTrampoline())
-                        return 0;
-                    throw new InvalidMoveException(neighbor, null);
-            }
+            if (_map.Cells.MoveDisturbsRock(current, neighbor))
+                return 1000;
+
+            //if (_map.Cells.At(neighbor).IsEarth())
+            //    return 10;
+
+            return 1;           
         }
 
         private Queue<RobotCommand> ReconstructPath(Dictionary<Point, Point> came_from, Point start, Point current)
@@ -105,6 +99,22 @@ namespace LambdaLifter.Controller
             while (current != start)
             {
                 var prev = came_from[current];
+
+                if (_map.Cells.At(prev).IsRock())
+                {
+                    DisturbsRocks = true;
+                    PushesRocks = true;
+                }
+
+                if (_map.Cells.MoveDisturbsRock(prev, current))
+                {
+                    DisturbsRocks = true;
+                }
+
+                if (_map.Cells.At(prev).IsTrampoline())
+                {
+                    UsesPortals = true;
+                }
 
                 if (prev.Up() == current)
                     path.Enqueue(RobotCommand.Up);

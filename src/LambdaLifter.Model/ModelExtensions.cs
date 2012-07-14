@@ -135,7 +135,28 @@ namespace LambdaLifter.Model
             }
 
             return false;
+        }
 
+        public static bool MoveDisturbsRock(this CellType[,] cells, Point start, Point end)
+        {
+            var startType = cells.At(start);    
+            var endType = cells.At(end);
+            if (endType.IsRock())
+                return true;
+
+            if (endType.HoldsRock())
+            {
+                if (cells.At(end.Up()).IsRock())
+                    return true;
+
+                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot())
+                    return true;
+
+                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Left()).IsRockOrLambda() && cells.At(end.Up()).IsEmptyOrRobot())
+                    return true;
+            }
+
+            return false;
         }
 
         public static bool IsRock(this CellType cell)
@@ -166,6 +187,22 @@ namespace LambdaLifter.Model
         public static bool IsEmptyOrRobot(this CellType cell)
         {
             return cell.IsEmpty() || cell == CellType.Robot;
+        }
+
+        public static bool IsRockOrLambda(this CellType cell)
+        {
+            return cell.IsRock() || cell.IsLambda();
+        }
+
+
+        public static bool HoldsRock(this CellType cell)
+        {
+            return cell.IsRock() || cell.IsTrampoline() || cell.IsPortal() || cell.IsLambda() || cell.IsRobot();
+        }
+
+        public static bool IsRobot(this CellType cell)
+        {
+            return cell == CellType.Robot;
         }
 
         public static bool IsLambda(this CellType cell)
