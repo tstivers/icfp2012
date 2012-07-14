@@ -28,6 +28,23 @@ namespace LambdaLifter.Model
             return new Point(point.X, point.Y - 1);
         }
 
+        public static Point Move(this Point point, RobotCommand direction)
+        {
+            switch (direction)
+            {
+                case RobotCommand.Up:
+                    return point.Up();
+                case RobotCommand.Down:
+                    return point.Down();
+                case RobotCommand.Left:
+                    return point.Left();
+                case RobotCommand.Right:
+                    return point.Right();
+                default:
+                    return point;
+            }
+        }
+
     }    
 
     public static class CellExtensions

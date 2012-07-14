@@ -184,6 +184,13 @@ namespace LambdaLifter.Controller
             if (_commands == null)
                 return RobotCommand.Abort;
 
+            if (Map.Cells.At(Map.RobotPosition.Move(_commands.Peek())).IsLambda())
+            {
+                var cmd = _commands.Dequeue();
+                _commands = null;
+                return cmd;
+            }
+
             return _commands.Dequeue();
         }       
     }
