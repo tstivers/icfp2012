@@ -54,12 +54,13 @@ namespace LambdaLifter.Controller
 
             _commands = null;
 
+            var routeFinder = new SimpleAStar(Map);
+
             foreach (var lambda in Map.PriorityLambdas)
             {
                 if (Map.Cells.At(lambda.Up()).IsRock())
                     continue;
-
-                var routeFinder = new SimpleAStar(Map.Clone());
+                
                 var route = routeFinder.GetRouteTo(lambda);
                 if (_commands == null || (route != null && route.Count < _commands.Count))
                 {
@@ -71,8 +72,7 @@ namespace LambdaLifter.Controller
             if (_commands == null)
             {
                 foreach (var lambda in Map.PriorityLambdas)
-                {
-                    var routeFinder = new SimpleAStar(Map.Clone());
+                {                    
                     var route = routeFinder.GetRouteTo(lambda);
                     if (_commands == null || (route != null && route.Count < _commands.Count))
                     {
@@ -88,8 +88,7 @@ namespace LambdaLifter.Controller
                 {
                     if (Map.Cells.At(lambda.Up()).IsRock())
                         continue;
-
-                    var routeFinder = new SimpleAStar(Map.Clone());
+                    
                     var route = routeFinder.GetRouteTo(lambda);
                     if (_commands == null || (route != null && route.Count < _commands.Count))
                     {
@@ -102,8 +101,7 @@ namespace LambdaLifter.Controller
             if (_commands == null)
             {
                 foreach (var lambda in Map.Lambdas)
-                {
-                    var routeFinder = new SimpleAStar(Map.Clone());
+                {                    
                     var route = routeFinder.GetRouteTo(lambda);
                     if (_commands == null || (route != null && route.Count < _commands.Count))
                     {
@@ -114,8 +112,7 @@ namespace LambdaLifter.Controller
             }
 
             if (_commands == null && Map.Lambdas.Count == 0)
-            {
-                var routeFinder = new SimpleAStar(Map.Clone());
+            {                
                 _commands = routeFinder.GetRouteTo(Map.Lifts[0]);
                 State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);
             }
@@ -132,8 +129,7 @@ namespace LambdaLifter.Controller
             }
 
             if (_commands == null)
-            {
-                var routeFinder = new SimpleAStar(Map.Clone());
+            {                
                 foreach (var rock in Map.MoveableRocks)
                 {
                     if (Map.Cells.IsValidMove(rock.Left(), rock))

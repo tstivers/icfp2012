@@ -19,7 +19,7 @@ namespace LambdaLifter.Controller
         private class PointComparer : IComparer<Point>
         {
             private Dictionary<Point, float> _f_scores;
- 
+
             public PointComparer(Dictionary<Point, float> f_scores)
             {
                 _f_scores = f_scores;
@@ -38,13 +38,13 @@ namespace LambdaLifter.Controller
             if (start == goal)
                 return null;
 
-            var closed_set = new HashSet<Point>();            
+            var closed_set = new HashSet<Point>();
             var came_from = new Dictionary<Point, Point>();
-            var g_score = new Dictionary<Point, float>() {{start, 0}};
-            var f_score = new Dictionary<Point, float>() {{start, GetDistance(start, goal)}};
-            var current = start;                        
-            C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) {start};            
-            
+            var g_score = new Dictionary<Point, float>() { { start, 0 } };
+            var f_score = new Dictionary<Point, float>() { { start, GetDistance(start, goal) } };
+            var current = start;
+            C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) { start };
+
             while (!open_set.IsEmpty)
             {
                 current = open_set.DeleteMin();
@@ -75,7 +75,7 @@ namespace LambdaLifter.Controller
 
         private float MoveCost(Point current, Point neighbor)
         {
-            switch(_map.Cells.At(neighbor))
+            switch (_map.Cells.At(neighbor))
             {
                 case CellType.Empty:
                     return 0;
@@ -90,8 +90,10 @@ namespace LambdaLifter.Controller
                 case CellType.Rock:
                     return 100;
                 case CellType.OpenLift:
-                    return 0;               
+                    return 0;
                 default:
+                    if (_map.Cells.At(neighbor).IsTrampoline())
+                        return 0;
                     throw new InvalidMoveException(neighbor, null);
             }
         }
@@ -114,7 +116,8 @@ namespace LambdaLifter.Controller
                     path.Enqueue(RobotCommand.Right);
                 else
                 {
-                    throw new InvalidMoveException(prev, null);
+                    // assume we came through a portal
+                    //throw new InvalidMoveException(prev, null);
                 }
                 current = prev;
             }

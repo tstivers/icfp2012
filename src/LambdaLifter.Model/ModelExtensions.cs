@@ -5,7 +5,7 @@ using System.Text;
 using System.Drawing;
 
 namespace LambdaLifter.Model
-{   
+{
     public static class PointExtensions
     {
         public static Point Left(this Point point)
@@ -45,7 +45,20 @@ namespace LambdaLifter.Model
             }
         }
 
-    }    
+        public static RobotCommand GetMove(this Point start, Point destination)
+        {
+            if (start.Up() == destination)
+                return RobotCommand.Up;
+            if (start.Down() == destination)
+                return RobotCommand.Down;
+            if (start.Left() == destination)
+                return RobotCommand.Left;
+            if (start.Right() == destination)
+                return RobotCommand.Right;
+
+            throw new InvalidMoveException(start, null);
+        }
+    }
 
     public static class CellExtensions
     {
@@ -63,8 +76,8 @@ namespace LambdaLifter.Model
                 throw new InvalidMoveException(point, null);
 
             cells[point.X, point.Y] = type;
-        }             
- 
+        }
+
         public static bool IsValidMove(this CellType[,] cells, Point start, Point end)
         {
             if (cells.At(end).IsTraversible())
@@ -78,7 +91,7 @@ namespace LambdaLifter.Model
                     return false;
 
                 // diagonals too!
-                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Right()).IsRock())                
+                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Right()).IsRock())
                     return false;
 
                 // diagonals too!
@@ -121,8 +134,6 @@ namespace LambdaLifter.Model
                 return true;
             }
 
-         
-
             return false;
 
         }
@@ -142,6 +153,16 @@ namespace LambdaLifter.Model
             return cell == CellType.Empty;
         }
 
+        public static bool IsTrampoline(this CellType cell)
+        {
+            return cell >= (CellType)'A' && cell < (CellType)'L';
+        }
+
+        public static bool IsPortal(this CellType cell)
+        {
+            return cell >= (CellType)'1' && cell <= (CellType)'9';
+        }
+
         public static bool IsEmptyOrRobot(this CellType cell)
         {
             return cell.IsEmpty() || cell == CellType.Robot;
@@ -154,7 +175,7 @@ namespace LambdaLifter.Model
 
         public static bool IsTraversible(this CellType cell)
         {
-            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot || cell == CellType.Rock;
+            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot || cell == CellType.Rock || cell.IsTrampoline();
         }
 
         public static bool IsLeftMoveable(this CellType[,] cells, Point rock)
