@@ -46,7 +46,7 @@ namespace LambdaLifter.Cli
             // controller.GenerateMoves();
             int moves = 0;
             int score = 0;
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 120 * 1000)
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height)
             {
                 Console.Clear();                
                 Console.Write(map.ToString());

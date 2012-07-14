@@ -164,8 +164,7 @@ namespace LamddaLifter.Controller
                     {
                         var route = routeFinder.GetRouteTo(rock.Down());
                         if (route != null)
-                            _commands = route;
-                        _finalCommand = RobotCommand.Right;
+                            _commands = route;                        
                         break;
                     }
                 }
