@@ -17,10 +17,12 @@ namespace LambdaLifter.Cli
 
         static void Main(string[] args)
         {            
-            string[] mapText;            
+            string[] mapText;
+            bool contest = false;
 
             if (args.Length < 1)
             {
+                contest = true;
                 var lines = new List<string>();
                 string line;
                 do
@@ -50,27 +52,38 @@ namespace LambdaLifter.Cli
             int moves = 0;            
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height)
             {
-                Console.Clear();                
-                Console.Write(map.ToString());
+                if (!contest)
+                {
+                    Console.Clear();
+                    Console.Write(map.ToString());
+                }
+
                 if (outfile != null)
                 {
-                    outfile.Write((char) map.ExecuteTurn(controller.GetNextMove()));
+                    outfile.Write((char)map.ExecuteTurn(controller.GetNextMove()));
                     outfile.Flush();
                 }
+                else if (contest)
+                    Console.Write((char)map.ExecuteTurn(controller.GetNextMove()));
                 else
                     map.ExecuteTurn(controller.GetNextMove());
+
                 //Thread.Sleep(200);
                 moves++;
             }
-            Console.Clear();
-            Console.WriteLine(map.ToString());
-            Console.WriteLine("MapState: {0}", map.State);
-            Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
-            Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
-            if (Regex.IsMatch(args[0], @"tests(\\|/)"))
-                Console.WriteLine("score (test): {0}", map.Score);
-            else
-                Console.WriteLine("Score: {0}", map.Score);
+
+            if (!contest)
+            {
+                Console.Clear();
+                Console.WriteLine(map.ToString());
+                Console.WriteLine("MapState: {0}", map.State);
+                Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
+                Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
+                if (Regex.IsMatch(args[0], @"tests(\\|/)"))
+                    Console.WriteLine("score (test): {0}", map.Score);
+                else
+                    Console.WriteLine("Score: {0}", map.Score);
+            }
         }
     }
 }
