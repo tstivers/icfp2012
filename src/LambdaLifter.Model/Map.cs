@@ -61,6 +61,8 @@ namespace LambdaLifter.Model
         public bool RocksMoved { get; private set; }
         public HashSet<Point> PriorityLambdas { get; set; }
         public HashSet<Point> Rocks { get; private set; }
+        public int Score { get; private set; }
+        public int LambdasCollected { get; private set; }
 
         public new string ToString()
         {
@@ -94,6 +96,8 @@ namespace LambdaLifter.Model
             RobotPosition = map.RobotPosition;
             State = map.State;
             Rocks = map.Rocks;
+            Score = map.Score;
+            LambdasCollected = map.LambdasCollected;
         }
 
         public Map(string[] lines)
@@ -153,9 +157,11 @@ namespace LambdaLifter.Model
                     break;
                 case RobotCommand.Abort:
                     State = MapState.Aborted;
+                    Score += LambdasCollected*25;
                     break;
             }
 
+            Score -= 1;
             Simulate();
             return command;
         }
@@ -191,11 +197,14 @@ namespace LambdaLifter.Model
             {
                 Lambdas.Remove(destPos);
                 PriorityLambdas.Remove(destPos);
+                Score += 25;
+                LambdasCollected++;
             }
 
             if (destType == CellType.OpenLift)
             {
                 State = MapState.Won;
+                Score += LambdasCollected*50;
             }
 
             Cells.Set(RobotPosition, CellType.Empty);
@@ -224,8 +233,7 @@ namespace LambdaLifter.Model
 
                     if (Cells.At(current).IsRock())
                     {
-                        // If (x; y) contains a Rock, and (x; y - 1) is Empty:
-                        var dwon = Cells.At(current.Down());
+                        // If (x; y) contains a Rock, and (x; y - 1) is Empty:                        
                         if (Cells.At(current.Down()).IsEmpty())
                         {
                             // – (x; y) is updated to Empty, (x; y - 1) is updated to Rock.

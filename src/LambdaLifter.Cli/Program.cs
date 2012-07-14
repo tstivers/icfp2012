@@ -40,16 +40,15 @@ namespace LambdaLifter.Cli
             }
 
             var map = new Map(mapText);
-            var controller = new SimpleAStarController(map);
-            string lastState = null;
+            var controller = new SimpleAStarController(map);            
             var sw = new Stopwatch();
             sw.Start();
             // controller.GenerateMoves();
             int moves = 0;
+            int score = 0;
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 120 * 1000)
             {
-                Console.Clear();
-                //lastState = map.ToString();
+                Console.Clear();                
                 Console.Write(map.ToString());
                 if (outfile != null)
                 {
@@ -66,6 +65,7 @@ namespace LambdaLifter.Cli
             Console.WriteLine("MapState: {0}", map.State);
             Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
             Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
+            Console.WriteLine("Score: {0}", map.Score);
         }
     }
 }
