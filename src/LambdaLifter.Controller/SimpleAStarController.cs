@@ -9,20 +9,21 @@ namespace LambdaLifter.Controller
 {
     public class SimpleAStarController : ControllerBase
     {
-        private Queue<RobotCommand> _commands = new Queue<RobotCommand>();        
+        public Queue<RobotCommand> CommandQueue { get; private set; }
         public string State { get; private set; }
 
         public SimpleAStarController(Map map)
             : base(map)
         {
+            CommandQueue = new Queue<RobotCommand>();
         }      
 
         public override RobotCommand GetNextMove()
         {
-            if (_commands != null && _commands.Count > 0 && !Map.RocksMoved && !Map.StuffChanged)
-                return _commands.Dequeue();          
+            if (CommandQueue != null && CommandQueue.Count > 0 && !Map.IsChanged)
+                return CommandQueue.Dequeue();          
 
-            _commands = null;
+            CommandQueue = null;
 
             var routeFinder = new AStarRouteFinder(Map);           
 
@@ -49,22 +50,22 @@ namespace LambdaLifter.Controller
                 }
 
                 if (routes.Count > 0)
-                    _commands = routes.Aggregate((best, route) => best = route.Value < best.Value ? route : best).Key;
+                    CommandQueue = routes.Aggregate((best, route) => best = route.Value < best.Value ? route : best).Key;
             }
 
             // if all lambdas are gone, try to get to the lift
             if (Map.Lambdas.Count == 0)
             {                
-                _commands = routeFinder.GetRouteTo(Map.Lifts[0]);
+                CommandQueue = routeFinder.GetRouteTo(Map.Lifts[0]);
                 State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);
             }
 
             // can't get lambas or a lift, wait for falling rocks to stop
-            if (_commands == null)
+            if (CommandQueue == null)
             {
                 var temp = Map.Clone();
                 temp.ExecuteTurn(RobotCommand.Wait);
-                if (temp.RocksMoved)
+                if (temp.IsChanged)
                 {
                     State = String.Format("Waiting for rocks to move");
                     return RobotCommand.Wait;
@@ -72,59 +73,59 @@ namespace LambdaLifter.Controller
             }
 
             // try to move a rock as a last ditch effort
-            if (_commands == null)
+            if (CommandQueue == null)
             {                
                 foreach (var rock in Map.MoveableRocks)
                 {
-                    if (Map.Cells.IsValidMove(rock.Left(), rock))
+                    if (Map.Cell.IsValidMove(rock.Left(), rock))
                     {
                         var route = routeFinder.GetRouteTo(rock.Left());
                         if (route != null)
                         {
-                            _commands = route;                            
-                            _commands.Enqueue(RobotCommand.Right);
+                            CommandQueue = route;                            
+                            CommandQueue.Enqueue(RobotCommand.Right);
                             State = String.Format("Moving rock right at {0}", rock);
                             Map.Target = rock;
                             break;
                         }
                     }
-                    else if (Map.Cells.IsValidMove(rock.Right(), rock))
+                    else if (Map.Cell.IsValidMove(rock.Right(), rock))
                     {
                         var route = routeFinder.GetRouteTo(rock.Right());
                         if (route != null)
                         {
-                            _commands = route;
-                            _commands.Enqueue(RobotCommand.Left);
+                            CommandQueue = route;
+                            CommandQueue.Enqueue(RobotCommand.Left);
                             State = String.Format("Moving rock left at {0}", rock);
                             break;
                         }
                     }
-                    else if (Map.Cells.At(rock.Right()).IsEarth())
+                    else if (Map.Cell.At(rock.Right()).IsEarth())
                     {
                         var route = routeFinder.GetRouteTo(rock.Right());
                         if (route != null)
                         {
-                            _commands = route;
+                            CommandQueue = route;
                             State = String.Format("Clearing rock right at {0}", rock);
                             break;
                         }
                     }
-                    else if (Map.Cells.At(rock.Left()).IsEarth())
+                    else if (Map.Cell.At(rock.Left()).IsEarth())
                     {
                         var route = routeFinder.GetRouteTo(rock.Left());
                         if (route != null)
                         {
-                            _commands = route;
+                            CommandQueue = route;
                             State = String.Format("Clearing rock left at {0}", rock);
                             break;
                         }
                     }
-                    else if (Map.Cells.At(rock.Down()).IsTraversible())
+                    else if (Map.Cell.At(rock.Down()).IsTraversible())
                     {
                         var route = routeFinder.GetRouteTo(rock.Down());
                         if (route != null)
                         {
-                            _commands = route;
+                            CommandQueue = route;
                             State = String.Format("Clearing rock bottom at {0} : {1}", rock, rock.Down());
                             Map.Target = rock.Down();
                             break;
@@ -134,13 +135,13 @@ namespace LambdaLifter.Controller
             }
 
             // can't get anywhere or move any rocks, give up
-            if (_commands == null)
+            if (CommandQueue == null)
             {
                 State = "Nothing I can do...";
                 return RobotCommand.Abort;
             }            
 
-            return _commands.Dequeue();
+            return CommandQueue.Dequeue();
         }
     }
 }

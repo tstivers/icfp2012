@@ -9,21 +9,22 @@ namespace LambdaLifter.Controller
 {
     internal class AStarRouteFinder
     {
-        private readonly Map _map;
+        public Map Map { get; private set; }
 
         public bool UsesPortals { get; set; }
         public bool PushesRocks { get; set; }
         public bool DisturbsRocks { get; set; }
-        private HashSet<Point> _unreachable = new HashSet<Point>();
+
+        private readonly HashSet<Point> _unreachable = new HashSet<Point>();
 
         public AStarRouteFinder(Map map)
         {
-            _map = map;
+            Map = map;
         }
 
         private class PointComparer : IComparer<Point>
         {
-            private Dictionary<Point, float> _f_scores;
+            private readonly Dictionary<Point, float> _f_scores;
 
             public PointComparer(Dictionary<Point, float> f_scores)
             {
@@ -42,7 +43,7 @@ namespace LambdaLifter.Controller
             DisturbsRocks = false;
             UsesPortals = false;
 
-            var start = _map.RobotPosition;
+            var start = Map.RobotPosition;
 
             if (start == goal)
                 return null;
@@ -64,10 +65,11 @@ namespace LambdaLifter.Controller
                     return ReconstructPath(came_from, start, goal);
                 closed_set.Add(current);
 
-                foreach (var neighbor in _map.Neighbors(current))
+                foreach (var neighbor in Map.Neighbors(current))
                 {
                     if (closed_set.Contains(neighbor))
                         continue;
+
                     var tentative_g_score = g_score[current] + MoveCost(current, neighbor);
 
                     var temp = neighbor;
@@ -83,8 +85,8 @@ namespace LambdaLifter.Controller
             }
 
             // fill out our unreachable points
-            for (int x = 0; x < _map.Width; x++)
-                for (int y = 0; y < _map.Height; y++)
+            for (int x = 0; x < Map.Width; x++)
+                for (int y = 0; y < Map.Height; y++)
                     if (!closed_set.Contains(new Point(x, y)))
                         _unreachable.Add(new Point(x, y));
 
@@ -93,10 +95,10 @@ namespace LambdaLifter.Controller
 
         private float MoveCost(Point current, Point neighbor)
         {
-            if (_map.Cells.MoveDisturbsRock(current, neighbor))
+            if (Map.Cell.MoveDisturbsRock(current, neighbor))
                 return 1000;
 
-            //if (_map.Cells.At(neighbor).IsEarth())
+            //if (Map.Cell.At(neighbor).IsEarth())
             //    return 10;
 
             return 1;
@@ -110,18 +112,18 @@ namespace LambdaLifter.Controller
             {
                 var prev = came_from[current];
 
-                if (_map.Cells.At(prev).IsRock())
+                if (Map.Cell.At(prev).IsRock())
                 {
                     DisturbsRocks = true;
                     PushesRocks = true;
                 }
 
-                if (_map.Cells.MoveDisturbsRock(prev, current))
+                if (Map.Cell.MoveDisturbsRock(prev, current))
                 {
                     DisturbsRocks = true;
                 }
 
-                if (_map.Cells.At(prev).IsTrampoline())
+                if (Map.Cell.At(prev).IsTrampoline())
                 {
                     UsesPortals = true;
                 }
