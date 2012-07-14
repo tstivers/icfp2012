@@ -165,7 +165,8 @@ namespace LambdaLifter.Model
                                                                                  Rocks.Add(new Point(x, y));
                                                                                  break;
                                                                              case CellType.ClosedLift:
-                                                                                 goto case CellType.OpenLift;
+                                                                                 Lifts.Add(new Point(x, y));
+                                                                                 break;
                                                                              case CellType.OpenLift:
                                                                                  Lifts.Add(new Point(x, y));
                                                                                  break;
