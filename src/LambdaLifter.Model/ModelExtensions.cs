@@ -176,7 +176,7 @@ namespace LambdaLifter.Model
 
         public static bool IsTrampoline(this CellType cell)
         {
-            return cell >= (CellType)'A' && cell < (CellType)'L';
+            return cell >= (CellType)'A' && cell < (CellType)'I';
         }
 
         public static bool IsPortal(this CellType cell)
