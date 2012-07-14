@@ -86,7 +86,7 @@ namespace LamddaLifter.Controller
                 case CellType.Earth:
                     if (_map.Cells.At(neighbor.Up()) == CellType.Rock)
                         return float.MaxValue;
-                    return 100;
+                    return 1;
                 case CellType.Rock:
                     return 2;
                 case CellType.OpenLift:

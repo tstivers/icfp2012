@@ -61,14 +61,14 @@ namespace LambdaLifter.Model
                     return false;
 
                 // diagonals too!
-                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmpty() && cells.At(end.Right()).IsRock())                
+                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Right()).IsRock())                
                     return false;
 
                 // diagonals too!
-                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Up()).IsEmpty() && (cells.At(end.Left()).IsRock() || cells.At(end.Left()).IsLambda()))
+                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && (cells.At(end.Left()).IsRock() || cells.At(end.Left()).IsLambda()))
                     return false;
 
-                if (cells.At(end.Up()).IsRock() && (!cells.At(end.Left()).IsTraversible() || !cells.At(end.Right()).IsTraversible()))
+                if (cells.At(end.Up()).IsRock() && !cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
                     return false;
 
                 return true;
@@ -96,6 +96,11 @@ namespace LambdaLifter.Model
             return cell == CellType.Empty;
         }
 
+        public static bool IsEmptyOrRobot(this CellType cell)
+        {
+            return cell.IsEmpty() || cell == CellType.Robot;
+        }
+
         public static bool IsLambda(this CellType cell)
         {
             return cell == CellType.Lambda;
@@ -105,6 +110,29 @@ namespace LambdaLifter.Model
         {
             return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot;
         }
+
+        public static bool IsLeftMoveable(this CellType[,] cells, Point rock)
+        {
+            if (!cells.At(rock).IsRock())
+                return false;
+
+            if (!cells.At(rock.Left()).IsTraversible() || !cells.At(rock.Right()).IsTraversible())
+                return false;
+
+            return true;
+        }
+
+        public static bool IsRightMoveable(this CellType[,] cells, Point rock)
+        {
+            if (!cells.At(rock).IsRock())
+                return false;
+
+            if (!cells.At(rock.Left()).IsTraversible() || !cells.At(rock.Right()).IsTraversible())
+                return false;
+
+            return true;
+        }
+
 
     }
 }

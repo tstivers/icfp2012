@@ -38,18 +38,19 @@ namespace LambdaLifter.Cli
             string lastState = null;
             var sw = new Stopwatch();
             sw.Start();
-
+            // controller.GenerateMoves();            
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 120 * 1000)
             {
                 Console.Clear();
                 lastState = map.ToString();
                 Console.Write(map.ToString());                
                 map.ExecuteTurn(controller.GetNextMove());
-                //Thread.Sleep(100);
+                Thread.Sleep(200);
             }
             Console.Clear();
             Console.WriteLine(map.ToString());
             Console.WriteLine("MapState: {0}", map.State);
+            Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
         }
     }
 }

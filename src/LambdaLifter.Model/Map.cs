@@ -55,10 +55,12 @@ namespace LambdaLifter.Model
         public int Height { get; private set; }
         public Point RobotPosition { get; private set; }
         public List<Point> Lifts { get; private set; }
-        public List<Point> Lambdas { get; private set; } 
-        public CellType[,] Cells { get { return _cells;  } }
+        public List<Point> Lambdas { get; private set; }
+        public CellType[,] Cells { get { return _cells; } }
         public MapState State { get; private set; }
         public bool RocksMoved { get; private set; }
+        public HashSet<Point> PriorityLambdas { get; set; }
+        public HashSet<Point> Rocks { get; private set; }
 
         public new string ToString()
         {
@@ -84,12 +86,14 @@ namespace LambdaLifter.Model
         {
             Lambdas = new List<Point>(map.Lambdas);
             Lifts = new List<Point>(map.Lifts);
+            PriorityLambdas = new HashSet<Point>(map.PriorityLambdas);
             _cells = new CellType[map.Cells.GetLength(0), map.Cells.GetLength(1)];
             Array.Copy(map.Cells, _cells, _cells.Length);
             Width = map.Width;
             Height = map.Height;
             RobotPosition = map.RobotPosition;
             State = map.State;
+            Rocks = map.Rocks;
         }
 
         public Map(string[] lines)
@@ -97,18 +101,20 @@ namespace LambdaLifter.Model
             State = MapState.Valid;
             Lambdas = new List<Point>();
             Lifts = new List<Point>();
-                      
+            PriorityLambdas = new HashSet<Point>();
+            Rocks = new HashSet<Point>();
+
             Width = lines.Max(x => x.Length);
             Height = (lines[lines.Length - 1].Length == 0) ? lines.Length - 1 : lines.Length;
-            _cells = new CellType[Width,Height];
+            _cells = new CellType[Width, Height];
             for (var y = 0; y < Height; y++)
-            {                
+            {
                 for (var x = 0; x < Width; x++)
                 {
                     if (x < lines[Height - (y + 1)].Length)
-                    {                        
+                    {
                         _cells[x, y] = (CellType)lines[Height - (y + 1)][x];
-                    }                        
+                    }
                     else
                     {
                         _cells[x, y] = CellType.Empty;
@@ -119,6 +125,9 @@ namespace LambdaLifter.Model
 
                     if (_cells[x, y] == CellType.Lambda)
                         Lambdas.Add(new Point(x, y));
+
+                    if (_cells[x, y] == CellType.Rock)
+                        Rocks.Add(new Point(x, y));
 
                     if (_cells[x, y] == CellType.ClosedLift || _cells[x, y] == CellType.OpenLift)
                         Lifts.Add(new Point(x, y));
@@ -151,14 +160,14 @@ namespace LambdaLifter.Model
         }
 
         private void MoveRobotTo(RobotCommand direction, Point destPos)
-        {            
+        {
             var destType = Cells.At(destPos);
 
             if (destType == CellType.Invalid || destType == CellType.Wall || destType == CellType.ClosedLift)
                 throw new InvalidMoveException(destPos, ToString());
 
             if (destType == CellType.Rock)
-            {               
+            {
                 if (direction == RobotCommand.Left && Cells.At(destPos.Left()) == CellType.Empty)
                 {
                     Cells.Set(destPos.Left(), CellType.Rock);
@@ -176,6 +185,7 @@ namespace LambdaLifter.Model
             if (destType == CellType.Lambda)
             {
                 Lambdas.Remove(destPos);
+                PriorityLambdas.Remove(destPos);
             }
 
             if (destType == CellType.OpenLift)
@@ -195,7 +205,7 @@ namespace LambdaLifter.Model
 
             RocksMoved = false;
 
-            var newState = new CellType[Width,Height];
+            var newState = new CellType[Width, Height];
             for (var y = 0; y < Height; y++)
             {
                 for (var x = 0; x < Width; x++)
@@ -217,6 +227,8 @@ namespace LambdaLifter.Model
                             newState.Set(current, CellType.Empty);
                             newState.Set(current.Down(), CellType.Rock);
                             RocksMoved = true;
+                            Rocks.Remove(current);
+                            Rocks.Add(current.Down());
                         }
                         else if (Cells.At(current.Down()).IsRock())
                         {
@@ -227,6 +239,8 @@ namespace LambdaLifter.Model
                                 newState.Set(current, CellType.Empty);
                                 newState.Set(current.Right().Down(), CellType.Rock);
                                 RocksMoved = true;
+                                Rocks.Remove(current);
+                                Rocks.Add(current.Down());
                             }
                             // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
                             else if ((!Cells.At(current.Right()).IsEmpty() || !Cells.At(current.Right().Down()).IsEmpty()) &&
@@ -236,6 +250,8 @@ namespace LambdaLifter.Model
                                 newState.Set(current, CellType.Empty);
                                 newState.Set(current.Left().Down(), CellType.Rock);
                                 RocksMoved = true;
+                                Rocks.Remove(current);
+                                Rocks.Add(current.Down());
                             }
                         }
                         //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
@@ -245,8 +261,10 @@ namespace LambdaLifter.Model
                             newState.Set(current, CellType.Empty);
                             newState.Set(current.Right().Down(), CellType.Rock);
                             RocksMoved = true;
+                            Rocks.Remove(current);
+                            Rocks.Add(current.Down());
                         }
-                    }                    
+                    }
                 }
             }
 
@@ -276,8 +294,8 @@ namespace LambdaLifter.Model
         public Point[] Neighbors(Point point)
         {
             var neighbors = new List<Point>();
-            
-            if(Cells.IsValidMove(point, point.Up()))
+
+            if (Cells.IsValidMove(point, point.Up()))
                 neighbors.Add(point.Up());
 
             if (Cells.IsValidMove(point, point.Down()))
@@ -290,6 +308,16 @@ namespace LambdaLifter.Model
                 neighbors.Add(point.Right());
 
             return neighbors.ToArray();
+        }
+
+        public HashSet<Point> MoveableRocks
+        {
+            get
+            {
+                var mrocs = new HashSet<Point>();
+                Rocks.Where(rock => Cells.IsLeftMoveable(rock) || Cells.IsRightMoveable(rock) || Cells.At(rock.Down()).IsTraversible()).ForEachWithIndex((x, index) => mrocs.Add(x));                    
+                return mrocs;
+            }
         }
     }
 }
