@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,8 +36,10 @@ namespace LambdaLifter.Cli
             var map = new Map(mapText);
             var controller = new SimpleAStarController(map);
             string lastState = null;
+            var sw = new Stopwatch();
+            sw.Start();
 
-            while (map.State == MapState.Valid)
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 120 * 1000)
             {
                 Console.Clear();
                 lastState = map.ToString();
