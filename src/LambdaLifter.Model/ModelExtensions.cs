@@ -83,21 +83,44 @@ namespace LambdaLifter.Model
 
                 // diagonals too!
                 if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && (cells.At(end.Left()).IsRock() || cells.At(end.Left()).IsLambda()))
+                {
+                    if (!cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
+                        return false;
+
                     return false;
+                }
+
+                // don't unwedge when moving down
+                if (start.Down() == end)
+                {
+                    if (cells.At(start.Up().Right()).IsRock() && cells.At(start.Up()).IsEmptyOrRobot() && cells.At(start.Right()).IsRock())
+                        return false;
+
+                    if (cells.At(start.Up().Left()).IsRock() && cells.At(start.Up()).IsEmptyOrRobot() && (cells.At(start.Left()).IsRock() || cells.At(start.Left()).IsLambda()))
+                        return false;
+                }
+
+                // don't let crap fall on you if you can't get away
+
 
                 if (cells.At(end.Up()).IsRock() && !cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
                     return false;
 
+                if (cells.At(end).IsRock())
+                {
+                    return false;
+                    if (start.Right() == end && !cells.At(end.Right()).IsEmpty())
+                        return false;
+                    if (start.Left() == end && !cells.At(end.Left()).IsEmpty())
+                        return false;
+                    if (start.Right() != end && start.Left() != end)
+                        return false;
+                }
+
                 return true;
             }
 
-            if (cells.At(end).IsRock())
-            {
-                if (start.Right() == end && cells.At(end.Right()).IsEmpty())
-                    return true;
-                if (start.Left() == end && cells.At(end.Left()).IsEmpty())
-                    return true;
-            }
+         
 
             return false;
 
@@ -130,7 +153,7 @@ namespace LambdaLifter.Model
 
         public static bool IsTraversible(this CellType cell)
         {
-            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot;
+            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot || cell == CellType.Rock;
         }
 
         public static bool IsLeftMoveable(this CellType[,] cells, Point rock)

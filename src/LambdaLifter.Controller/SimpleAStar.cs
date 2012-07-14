@@ -88,13 +88,11 @@ namespace LambdaLifter.Controller
                         return float.MaxValue;
                     return 1;
                 case CellType.Rock:
-                    return float.MaxValue;
+                    return 100;
                 case CellType.OpenLift:
-                    return 0;
-                case CellType.ClosedLift:
-                    return 100;
+                    return 0;               
                 default:
-                    return 100;
+                    throw new InvalidMoveException(neighbor, null);
             }
         }
 

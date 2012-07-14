@@ -49,16 +49,23 @@ namespace LambdaLifter.Cli
                 timelimit = 30;
 
             var map = new Map(mapText);
+            int maxMoves = map.Width*map.Height;
+
+            if (args.Length > 2)
+            {
+                maxMoves = int.Parse(args[2]);
+            }
+
             var controller = new SimpleAStarController(map);            
             var sw = new Stopwatch();
             sw.Start();
             // controller.GenerateMoves();
             int moves = 0;            
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < map.Width*map.Height)
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
             {
                 if (!contest)
                 {
-                    Console.Clear();
+                    SafeClear();
                     Console.Write(map.ToString());
                 }
 
@@ -81,7 +88,7 @@ namespace LambdaLifter.Cli
 
             if (!contest)
             {
-                Console.Clear();
+                SafeClear();
                 Console.WriteLine(map.ToString());
                 Console.WriteLine("MapState: {0}", map.State);
                 Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
@@ -90,6 +97,23 @@ namespace LambdaLifter.Cli
                     Console.WriteLine("score (test): {0}", map.Score);
                 else
                     Console.WriteLine("Score: {0}", map.Score);
+            }
+        }
+
+        private static bool _isRedirected;
+
+        public static void SafeClear()
+        {
+            if (_isRedirected)
+                return;
+
+            try
+            {
+                Console.Clear();
+            }
+            catch (IOException)
+            {
+                _isRedirected = true;
             }
         }
     }
