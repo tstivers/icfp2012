@@ -13,15 +13,16 @@ namespace LambdaLifter.Cli
         public static bool IsRunningOnMono()
         {
             return Type.GetType("Mono.Runtime") != null;
-        }       
+        }
 
         static void Main(string[] args)
-        {            
+        {
             string[] mapText;
             bool contest = false;
             int timelimit = 140;
             int bestTurn = 0;
             int bestScore = 0;
+            bool abort = true;
 
             if (args.Length < 1)
             {
@@ -51,17 +52,16 @@ namespace LambdaLifter.Cli
                 timelimit = 30;
 
             var map = new Map(mapText);
-            int maxMoves = map.Width*map.Height;
+            int maxMoves = map.Width * map.Height;
 
             if (args.Length > 2)
             {
                 maxMoves = int.Parse(args[2]);
             }
 
-            var controller = new SimpleAStarController(map);            
+            var controller = new SimpleAStarController(map);
             var sw = new Stopwatch();
-            sw.Start();
-            // controller.GenerateMoves();
+            sw.Start();            
 
             var queue = new Queue<RobotCommand>();
             int moves = 0;
@@ -75,17 +75,16 @@ namespace LambdaLifter.Cli
                 if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
                 {
                     bestTurn = moves;
-                    bestScore = tempMap.AbortScore;  
+                    bestScore = tempMap.AbortScore;
                     //Console.WriteLine(tempMap.AbortScore);
                 }
                 else if (tempMap.State == MapState.Won && tempMap.Score > bestScore)
                 {
                     bestTurn = moves;
                     bestScore = tempMap.Score;
+                    abort = false;
                 }
             }
-
-            queue.Enqueue(RobotCommand.Abort);
 
             if (contest)
             {
@@ -93,42 +92,36 @@ namespace LambdaLifter.Cli
                 {
                     Console.Write((char)queue.Dequeue());
                 }
-                Console.Write('A');
+
+                if(abort)
+                    Console.Write((char)RobotCommand.Abort);
+                
+                return;
             }
 
             moves = 0;
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves <= bestTurn)
             {
-                if (moves == bestTurn)
+                if (moves == bestTurn && abort)
                     map.ExecuteTurn(RobotCommand.Abort);
                 else
                     map.ExecuteTurn(queue.Dequeue());
 
-                if (!contest)
-                {
-                    SafeClear();
-                    Console.Write(map.ToString());
-                    Console.WriteLine("ControllerState: {0}", controller.State);
-                    Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-                }
+                SafeClear();
+                Console.Write(map.ToString());
+                Console.WriteLine("ControllerState: {0}", controller.State);
+                Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
 
                 moves++;
             }
 
-            if (!contest)
-            {
-                Console.WriteLine("MapState: {0}", map.State);
-                if (Regex.IsMatch(args[0], @"tests(\\|/)"))
-                    Console.WriteLine("score (test): {0}", map.Score);
-                else
-                    Console.WriteLine("Score: {0}", map.Score);
+            Console.WriteLine("MapState: {0}", map.State);
+            if (Regex.IsMatch(args[0], @"tests(\\|/)"))
+                Console.WriteLine("score (test): {0}", map.Score);
+            else
+                Console.WriteLine("Score: {0}", map.Score);
 
-                Console.WriteLine("Best Score: {0}", bestScore);
-            }
-
-            if (map.State == MapState.Valid && contest)
-                Console.Write((char)RobotCommand.Abort);
-
+            Console.WriteLine("Best Score: {0}", bestScore);
         }
 
         private static bool _isRedirected;
