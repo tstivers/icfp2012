@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using LambdaLifter.Model;
 using LambdaLifter.Controller;
 
@@ -100,7 +101,7 @@ namespace LambdaLifter.Cli
             }
 
             moves = 0;
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves <= bestTurn)
+            while (map.State == MapState.Valid && moves <= bestTurn)
             {
                 if (moves == bestTurn && abort)
                     map.ExecuteTurn(RobotCommand.Abort);
@@ -111,7 +112,7 @@ namespace LambdaLifter.Cli
                 Console.Write(map.ToString());
                 Console.WriteLine("ControllerState: {0}", controller.State);
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-
+                //Thread.Sleep(75);
                 moves++;
             }
 

@@ -9,11 +9,16 @@ using System.Windows.Forms;
 
 namespace LambdaLifter.Visualizer
 {
-    public partial class Form1 : Form
+    public partial class MapVisualizer : Control
     {
-        public Form1()
+        public MapVisualizer()
         {
             InitializeComponent();
+        }
+
+        protected override void OnPaint(PaintEventArgs pe)
+        {
+            base.OnPaint(pe);
         }
     }
 }

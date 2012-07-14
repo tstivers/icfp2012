@@ -44,11 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MapVisualizer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MapVisualizer.Designer.cs">
+      <DependentUpon>MapVisualizer.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -70,6 +76,16 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LambdaLifter.Controller\LambdaLifter.Controller.csproj">
+      <Project>{7EC52D17-7828-41E5-ABD5-50290D21EBCE}</Project>
+      <Name>LambdaLifter.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LambdaLifter.Model\LambdaLifter.Model.csproj">
+      <Project>{1899439A-8327-4625-AC8B-F7667873FE81}</Project>
+      <Name>LambdaLifter.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

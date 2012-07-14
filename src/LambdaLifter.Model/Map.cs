@@ -17,7 +17,9 @@ namespace LambdaLifter.Model
         OpenLift = 'O',
         Earth = '.',
         Empty = ' ',
-        Invalid = 'X'
+        Invalid = 'X',
+        TrampolineIn = '@',
+        TrampolineOut = '?'
     }
 
     public enum RobotCommand
@@ -65,6 +67,7 @@ namespace LambdaLifter.Model
         public int LambdasCollected { get; private set; }
         public Point Target { get; set; }
         public bool StuffChanged { get; private set; }
+        public Dictionary<Point, Point> Trampolines { get; private set; }
 
         public new string ToString()
         {
@@ -75,10 +78,10 @@ namespace LambdaLifter.Model
                 {
                     if (new Point(x, Height - (y + 1)) != Target)
                         sb.Append((char)_cells[x, Height - (y + 1)]);
-                    else                    
-                        sb.Append('+');                    
+                    else
+                        sb.Append('+');
                 }
-                sb.Append('\n');                
+                sb.Append('\n');
             }
             sb.Append(String.Format("\nTarget: {0}\n", Target));
             return sb.ToString();
@@ -113,35 +116,41 @@ namespace LambdaLifter.Model
             PriorityLambdas = new HashSet<Point>();
             Rocks = new HashSet<Point>();
 
+            Height = lines.TakeWhile(x => x.Length > 0).Count();
             Width = lines.Max(x => x.Length);
-            Height = (lines[lines.Length - 1].Length == 0) ? lines.Length - 1 : lines.Length;
             _cells = new CellType[Width, Height];
-            for (var y = 0; y < Height; y++)
-            {
-                for (var x = 0; x < Width; x++)
-                {
-                    if (x < lines[Height - (y + 1)].Length)
-                    {
-                        _cells[x, y] = (CellType)lines[Height - (y + 1)][x];
-                    }
-                    else
-                    {
-                        _cells[x, y] = CellType.Empty;
-                    }
 
-                    if (_cells[x, y] == CellType.Robot)
-                        RobotPosition = new Point(x, y);
-
-                    if (_cells[x, y] == CellType.Lambda)
-                        Lambdas.Add(new Point(x, y));
-
-                    if (_cells[x, y] == CellType.Rock)
-                        Rocks.Add(new Point(x, y));
-
-                    if (_cells[x, y] == CellType.ClosedLift || _cells[x, y] == CellType.OpenLift)
-                        Lifts.Add(new Point(x, y));
-                }
-            }
+            lines.TakeWhile(x => x.Length > 0).
+                Reverse().ForEachWithIndex((line, y) =>
+                                               {
+                                                   line.ForEachWithIndex((cell, x) =>
+                                                                             {
+                                                                                 var cellType = (CellType)cell;
+                                                                                 _cells[
+                                                                                     x, y
+                                                                                     ] =
+                                                                                     (CellType)cell;
+                                                                                 switch (cellType)
+                                                                                 {
+                                                                                     case CellType.Robot:
+                                                                                         RobotPosition = new Point(x, y);
+                                                                                         break;
+                                                                                     case CellType.Lambda:
+                                                                                         Lambdas.Add(new Point(x, y));
+                                                                                         break;
+                                                                                     case CellType.Rock:
+                                                                                         Rocks.Add(new Point(x, y));
+                                                                                         break;
+                                                                                     case CellType.ClosedLift:
+                                                                                         goto case CellType.OpenLift;
+                                                                                     case CellType.OpenLift:
+                                                                                         Lifts.Add(new Point(x, y));
+                                                                                         break;
+                                                                                 }
+                                                                             });
+                                                   for (int i = line.Length; i < Width; i++)
+                                                       _cells[i, y] = CellType.Empty;
+                                               });
         }
 
         public int AbortScore
@@ -225,7 +234,7 @@ namespace LambdaLifter.Model
             if (destType == CellType.OpenLift)
             {
                 State = MapState.Won;
-                Score += LambdasCollected*50;
+                Score += LambdasCollected * 50;
             }
 
             Cells.Set(RobotPosition, CellType.Empty);
@@ -236,7 +245,7 @@ namespace LambdaLifter.Model
         private void Simulate()
         {
             if (State != MapState.Valid)
-                return;            
+                return;
 
             var newState = new CellType[Width, Height];
             for (var y = 0; y < Height; y++)
@@ -347,7 +356,7 @@ namespace LambdaLifter.Model
             get
             {
                 var mrocs = new HashSet<Point>();
-                Rocks.Where(rock => Cells.IsLeftMoveable(rock) || Cells.IsRightMoveable(rock) || Cells.At(rock.Down()).IsTraversible()).ForEachWithIndex((x, index) => mrocs.Add(x));                    
+                Rocks.Where(rock => Cells.IsLeftMoveable(rock) || Cells.IsRightMoveable(rock) || Cells.At(rock.Down()).IsTraversible()).ForEachWithIndex((x, index) => mrocs.Add(x));
                 return mrocs;
             }
         }
