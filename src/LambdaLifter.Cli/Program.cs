@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using LambdaLifter.Model;
-using LamddaLifter.Controller;
+using LambdaLifter.Controller;
 
 namespace LambdaLifter.Cli
 {
