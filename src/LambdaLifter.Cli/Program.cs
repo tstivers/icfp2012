@@ -18,6 +18,10 @@ namespace LambdaLifter.Cli
         static void Main(string[] args)
         {
             Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
+            // workaround for mono
+            Console_CancelKeyPress(null, null);
+            interrupted = false;
+
             string[] mapText;            
 
             if (args.Length < 1)
@@ -77,7 +81,7 @@ namespace LambdaLifter.Cli
 
         static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            Console.WriteLine("Sigint caught!");
+            //Console.WriteLine("Sigint caught!");
             interrupted = true;
         }
     }
