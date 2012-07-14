@@ -7,13 +7,14 @@ using LambdaLifter.Model;
 
 namespace LambdaLifter.Controller
 {
-    class AStarRouteFinder
+    internal class AStarRouteFinder
     {
         private readonly Map _map;
 
         public bool UsesPortals { get; set; }
         public bool PushesRocks { get; set; }
         public bool DisturbsRocks { get; set; }
+        private HashSet<Point> _unreachable = new HashSet<Point>();
 
         public AStarRouteFinder(Map map)
         {
@@ -46,12 +47,15 @@ namespace LambdaLifter.Controller
             if (start == goal)
                 return null;
 
+            if (_unreachable.Contains(goal))
+                return null;
+
             var closed_set = new HashSet<Point>();
             var came_from = new Dictionary<Point, Point>();
-            var g_score = new Dictionary<Point, float>() { { start, 0 } };
-            var f_score = new Dictionary<Point, float>() { { start, GetDistance(start, goal) } };
+            var g_score = new Dictionary<Point, float>() {{start, 0}};
+            var f_score = new Dictionary<Point, float>() {{start, GetDistance(start, goal)}};
             var current = start;
-            C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) { start };
+            C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) {start};
 
             while (!open_set.IsEmpty)
             {
@@ -78,6 +82,12 @@ namespace LambdaLifter.Controller
                 }
             }
 
+            // fill out our unreachable points
+            for (int x = 0; x < _map.Width; x++)
+                for (int y = 0; y < _map.Height; y++)
+                    if (!closed_set.Contains(new Point(x, y)))
+                        _unreachable.Add(new Point(x, y));
+
             return null;
         }
 
@@ -89,7 +99,7 @@ namespace LambdaLifter.Controller
             //if (_map.Cells.At(neighbor).IsEarth())
             //    return 10;
 
-            return 1;           
+            return 1;
         }
 
         private Queue<RobotCommand> ReconstructPath(Dictionary<Point, Point> came_from, Point start, Point current)
@@ -137,7 +147,10 @@ namespace LambdaLifter.Controller
 
         private float GetDistance(Point start, Point goal)
         {
-            return (float)(Math.Sqrt(Math.Pow(Math.Abs((float)start.X - goal.X), 2) + Math.Pow(Math.Abs((float)start.Y - goal.Y), 2)));
+            return
+                (float)
+                (Math.Sqrt(Math.Pow(Math.Abs((float) start.X - goal.X), 2) +
+                           Math.Pow(Math.Abs((float) start.Y - goal.Y), 2)));
         }
     }
 }
