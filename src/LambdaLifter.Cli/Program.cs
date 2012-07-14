@@ -24,7 +24,7 @@ namespace LambdaLifter.Cli
         {
             UnixSignal signal = null;
             if (IsRunningOnMono())
-                signal = new UnixSignal(Signum.SIGINT);
+                return;
 
             string[] mapText;            
 
