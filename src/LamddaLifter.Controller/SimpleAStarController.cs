@@ -53,7 +53,8 @@ namespace LamddaLifter.Controller
             {
                 var temp = Map.Clone();
                 temp.ExecuteTurn(RobotCommand.Wait);
-                return RobotCommand.Wait;
+                if (temp.RocksMoved)
+                    return RobotCommand.Wait;
             }
 
             if (_commands == null)
