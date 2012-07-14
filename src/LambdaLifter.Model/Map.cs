@@ -63,6 +63,8 @@ namespace LambdaLifter.Model
         public HashSet<Point> Rocks { get; private set; }
         public int Score { get; private set; }
         public int LambdasCollected { get; private set; }
+        public Point Target { get; set; }
+        public bool StuffChanged { get; private set; }
 
         public new string ToString()
         {
@@ -71,11 +73,14 @@ namespace LambdaLifter.Model
             {
                 for (var x = 0; x < Width; x++)
                 {
-                    sb.Append((char)_cells[x, Height - (y + 1)]);
+                    if (new Point(x, Height - (y + 1)) != Target)
+                        sb.Append((char)_cells[x, Height - (y + 1)]);
+                    else                    
+                        sb.Append('+');                    
                 }
-                sb.Append('\n');
+                sb.Append('\n');                
             }
-
+            sb.Append(String.Format("\nTarget: {0}\n", Target));
             return sb.ToString();
         }
 
@@ -141,6 +146,7 @@ namespace LambdaLifter.Model
 
         public RobotCommand ExecuteTurn(RobotCommand command)
         {
+            RocksMoved = false;
             switch (command)
             {
                 case RobotCommand.Up:
@@ -168,6 +174,7 @@ namespace LambdaLifter.Model
 
         private void MoveRobotTo(RobotCommand direction, Point destPos)
         {
+            StuffChanged = false;
             var destType = Cells.At(destPos);
 
             if (destType == CellType.Invalid || destType == CellType.Wall || destType == CellType.ClosedLift)
@@ -180,12 +187,14 @@ namespace LambdaLifter.Model
                     Cells.Set(destPos.Left(), CellType.Rock);
                     Rocks.Remove(destPos);
                     Rocks.Add(destPos.Left());
+                    RocksMoved = true;
                 }
                 else if (direction == RobotCommand.Right && Cells.At(destPos.Right()) == CellType.Empty)
                 {
                     Cells.Set(destPos.Right(), CellType.Rock);
                     Rocks.Remove(destPos);
                     Rocks.Add(destPos.Right());
+                    RocksMoved = true;
                 }
                 else
                 {
@@ -199,7 +208,11 @@ namespace LambdaLifter.Model
                 PriorityLambdas.Remove(destPos);
                 Score += 25;
                 LambdasCollected++;
+                StuffChanged = true;
             }
+
+            if (destType == CellType.Earth)
+                StuffChanged = true;
 
             if (destType == CellType.OpenLift)
             {
@@ -215,9 +228,7 @@ namespace LambdaLifter.Model
         private void Simulate()
         {
             if (State != MapState.Valid)
-                return;
-
-            RocksMoved = false;
+                return;            
 
             var newState = new CellType[Width, Height];
             for (var y = 0; y < Height; y++)
@@ -253,7 +264,7 @@ namespace LambdaLifter.Model
                                 newState.Set(current.Right().Down(), CellType.Rock);
                                 RocksMoved = true;
                                 Rocks.Remove(current);
-                                Rocks.Add(current.Down());
+                                Rocks.Add(current.Right().Down());
                             }
                             // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
                             else if ((!Cells.At(current.Right()).IsEmpty() || !Cells.At(current.Right().Down()).IsEmpty()) &&
@@ -264,7 +275,7 @@ namespace LambdaLifter.Model
                                 newState.Set(current.Left().Down(), CellType.Rock);
                                 RocksMoved = true;
                                 Rocks.Remove(current);
-                                Rocks.Add(current.Down());
+                                Rocks.Add(current.Left().Down());
                             }
                         }
                         //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
@@ -275,7 +286,7 @@ namespace LambdaLifter.Model
                             newState.Set(current.Right().Down(), CellType.Rock);
                             RocksMoved = true;
                             Rocks.Remove(current);
-                            Rocks.Add(current.Down());
+                            Rocks.Add(current.Right().Down());
                         }
                     }
                 }

@@ -62,13 +62,7 @@ namespace LambdaLifter.Cli
             // controller.GenerateMoves();
             int moves = 0;            
             while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
-            {
-                if (!contest)
-                {
-                    SafeClear();
-                    Console.Write(map.ToString());
-                }
-
+            {              
                 if (outfile != null)
                 {
                     outfile.Write((char)map.ExecuteTurn(controller.GetNextMove()));
@@ -79,25 +73,30 @@ namespace LambdaLifter.Cli
                 else
                     map.ExecuteTurn(controller.GetNextMove());
 
-                //Thread.Sleep(200);
+                if (!contest)
+                {
+                    SafeClear();
+                    Console.Write(map.ToString());
+                    Console.WriteLine("ControllerState: {0}", controller.State);                                        
+                    Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
+                }
+
                 moves++;
+            }
+
+            if (!contest)
+            {
+                Console.WriteLine("MapState: {0}", map.State);
+                if (Regex.IsMatch(args[0], @"tests(\\|/)"))
+                    Console.WriteLine("score (test): {0}", map.Score);
+                else
+                    Console.WriteLine("Score: {0}", map.Score);
+
             }
 
             if (map.State == MapState.Valid && contest)
                 Console.Write((char)RobotCommand.Abort);
 
-            if (!contest)
-            {
-                SafeClear();
-                Console.WriteLine(map.ToString());
-                Console.WriteLine("MapState: {0}", map.State);
-                Console.WriteLine("RocksMoved: {0}", map.RocksMoved);
-                Console.WriteLine("Moves: {0}/{1}", moves, map.Width*map.Height);
-                if (Regex.IsMatch(args[0], @"tests(\\|/)"))
-                    Console.WriteLine("score (test): {0}", map.Score);
-                else
-                    Console.WriteLine("Score: {0}", map.Score);
-            }
         }
 
         private static bool _isRedirected;

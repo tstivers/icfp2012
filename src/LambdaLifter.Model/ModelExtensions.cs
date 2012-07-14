@@ -101,14 +101,15 @@ namespace LambdaLifter.Model
                 }
 
                 // don't let crap fall on you if you can't get away
-
+                if (cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Up().Up()).IsRock())
+                    return false;
 
                 if (cells.At(end.Up()).IsRock() && !cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
                     return false;
 
                 if (cells.At(end).IsRock())
                 {
-                    return false;
+                    //return false;
                     if (start.Right() == end && !cells.At(end.Right()).IsEmpty())
                         return false;
                     if (start.Left() == end && !cells.At(end.Left()).IsEmpty())
