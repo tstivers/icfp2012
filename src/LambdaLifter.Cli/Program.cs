@@ -8,19 +8,23 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using LambdaLifter.Model;
 using LamddaLifter.Controller;
+using Mono.Unix;
+using Mono.Unix.Native;
 
 namespace LambdaLifter.Cli
 {
     class Program
     {
-        public static volatile bool interrupted;
+        public static bool IsRunningOnMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
 
         static void Main(string[] args)
         {
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-            // workaround for mono
-            Console_CancelKeyPress(null, null);
-            interrupted = false;
+            UnixSignal signal = null;
+            if (IsRunningOnMono())
+                signal = new UnixSignal(Signum.SIGINT);
 
             string[] mapText;            
 
@@ -52,9 +56,8 @@ namespace LambdaLifter.Cli
             var sw = new Stopwatch();
             sw.Start();
             // controller.GenerateMoves();
-            int moves = 0;
-            int score = 0;
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height && !interrupted)
+            int moves = 0;            
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < 30 * 1000 && moves < map.Width*map.Height && (signal == null || !signal.IsSet))
             {
                 Console.Clear();                
                 Console.Write(map.ToString());
@@ -79,10 +82,6 @@ namespace LambdaLifter.Cli
                 Console.WriteLine("Score: {0}", map.Score);
         }
 
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            //Console.WriteLine("Sigint caught!");
-            interrupted = true;
-        }
+    
     }
 }
