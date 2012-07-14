@@ -110,10 +110,10 @@ namespace LambdaLifter.Model
             Height = map.Height;
             RobotPosition = map.RobotPosition;
             State = map.State;
-            Rocks = map.Rocks;
+            Rocks = new HashSet<Point>(map.Rocks);
             Score = map.Score;
             LambdasCollected = map.LambdasCollected;
-            TrampolineIns = map.TrampolineIns;            
+            TrampolineIns = new Dictionary<Point, Point>(map.TrampolineIns);
         }
 
         public Map(string[] lines)

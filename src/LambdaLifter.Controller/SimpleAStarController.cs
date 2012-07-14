@@ -39,11 +39,11 @@ namespace LambdaLifter.Controller
 
                     var score = route.Count;
                     if (routeFinder.UsesPortals)
-                        score *= 10;
+                        score *= 1000;
                     else if (routeFinder.PushesRocks)
-                        score *= 5;
+                        score *= 100;
                     else if (routeFinder.DisturbsRocks)
-                        score *= 3;
+                        score *= 10;
 
                     routes.Add(route, score);
                 }
