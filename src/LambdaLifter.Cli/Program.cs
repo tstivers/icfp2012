@@ -20,6 +20,8 @@ namespace LambdaLifter.Cli
             string[] mapText;
             bool contest = false;
             int timelimit = 140;
+            int bestTurn = 0;
+            int bestScore = 0;
 
             if (args.Length < 1)
             {
@@ -60,8 +62,33 @@ namespace LambdaLifter.Cli
             var sw = new Stopwatch();
             sw.Start();
             // controller.GenerateMoves();
-            int moves = 0;            
-            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
+
+            var queue = new Queue<RobotCommand>();
+            int moves = 0;
+            var tempMap = map.Clone();
+            var tempController = new SimpleAStarController(tempMap);
+
+            while (tempMap.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
+            {
+                queue.Enqueue(tempMap.ExecuteTurn(tempController.GetNextMove()));
+                moves++;
+                if (tempMap.Score > bestScore)
+                    bestTurn = moves;
+            }
+
+            queue.Enqueue(RobotCommand.Abort);
+
+            if (contest)
+            {
+                for (int i = 0; i < bestTurn; i++)
+                {
+                    Console.Write((char)queue.Dequeue());
+                }
+                Console.Write('A');
+            }
+
+            moves = 0;
+            while (map.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves  < bestTurn)
             {              
                 if (outfile != null)
                 {
@@ -71,7 +98,7 @@ namespace LambdaLifter.Cli
                 else if (contest)
                     Console.Write((char)map.ExecuteTurn(controller.GetNextMove()));
                 else
-                    map.ExecuteTurn(controller.GetNextMove());
+                    map.ExecuteTurn(queue.Dequeue());
 
                 if (!contest)
                 {
@@ -91,6 +118,7 @@ namespace LambdaLifter.Cli
                     Console.WriteLine("score (test): {0}", map.Score);
                 else
                     Console.WriteLine("Score: {0}", map.Score);
+
 
             }
 
