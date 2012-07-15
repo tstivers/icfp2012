@@ -70,7 +70,17 @@ namespace LambdaLifter.Model
         public int Water { get; private set; }
         public int Flooding { get; private set; }
         public int Waterproof { get; private set; }
+        public int Underwater { get; private set; }
 
+        public int WaterLevel
+        {
+            get
+            {
+                if (Flooding == 0)
+                    return Water;
+                return Water + (Moves.Count/Flooding);
+            }
+        }
 
 
         public new string ToString()
@@ -109,6 +119,7 @@ namespace LambdaLifter.Model
             Water = map.Water;
             Flooding = map.Flooding;
             Waterproof = map.Waterproof;
+            Underwater = map.Underwater;
         }
 
         public Map(string[] lines)
@@ -369,6 +380,19 @@ namespace LambdaLifter.Model
 
             if (newState.At(RobotPosition.Up()).IsRock() && !Cell.At(RobotPosition.Up()).IsRock())
                 State = MapState.Killed;
+
+            if (RobotPosition.Y < WaterLevel)
+            {
+                Underwater++;
+                if (Underwater == Waterproof)
+                {
+                    State = MapState.Killed;
+                }
+            }
+            else
+            {
+                Underwater = 0;
+            }
 
             Cell = newState;
         }

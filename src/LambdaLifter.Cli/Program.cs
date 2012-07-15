@@ -114,7 +114,9 @@ namespace LambdaLifter.Cli
                 SafeClear();
                 Console.WriteLine(map.ToString());                
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-                //Thread.Sleep(75);
+                Console.WriteLine("WaterLevel: {0}", map.WaterLevel);
+                Console.WriteLine("Underwater: {0}/{1}", map.Underwater, map.Waterproof);
+                //Thread.Sleep(100);
                 moves++;
             }
 
