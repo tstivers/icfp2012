@@ -66,8 +66,8 @@ namespace LambdaLifter.Model
         public HashSet<Point> Rocks { get; private set; }
         public int Score { get; private set; }
         public int LambdasCollected { get; private set; }
-        public Point Target { get; set; }        
-        public Dictionary<Point, Point> Trampolines { get; private set; }        
+        public Point Target { get; set; }
+        public Dictionary<Point, Point> Trampolines { get; private set; }
 
         public new string ToString()
         {
@@ -77,7 +77,7 @@ namespace LambdaLifter.Model
                 for (var x = 0; x < Width; x++)
                 {
                     if (new Point(x, Height - (y + 1)) != Target)
-                        sb.Append((char)Cell[x, Height - (y + 1)]);
+                        sb.Append((char) Cell[x, Height - (y + 1)]);
                     else
                         sb.Append('+');
                 }
@@ -97,7 +97,7 @@ namespace LambdaLifter.Model
             Lambdas = new List<Point>(map.Lambdas);
             Lifts = new List<Point>(map.Lifts);
             PriorityLambdas = new HashSet<Point>(map.PriorityLambdas);
-            Cell = new CellType[map.Cell.GetLength(0), map.Cell.GetLength(1)];
+            Cell = new CellType[map.Cell.GetLength(0),map.Cell.GetLength(1)];
             Array.Copy(map.Cell, Cell, Cell.Length);
             Width = map.Width;
             Height = map.Height;
@@ -116,12 +116,12 @@ namespace LambdaLifter.Model
             Lifts = new List<Point>();
             PriorityLambdas = new HashSet<Point>();
             Rocks = new HashSet<Point>();
-            Trampolines = new Dictionary<Point, Point>();            
+            Trampolines = new Dictionary<Point, Point>();
             var trampolineMapping = new List<Pair<Pair<char, Point?>, Pair<char, Point?>>>();
 
             Height = lines.TakeWhile(x => x.Length > 0).Count();
             Width = lines.Max(x => x.Length);
-            Cell = new CellType[Width, Height];
+            Cell = new CellType[Width,Height];
 
             var trampRegex = new Regex(@"Trampoline (.) targets (.)");
 
@@ -135,55 +135,53 @@ namespace LambdaLifter.Model
                             new Pair<char, Point?>(tm.Groups[1].Value[0], null),
                             new Pair<char, Point?>(tm.Groups[2].Value[0], null)));
                 }
-            };
+            }
 
             lines.TakeWhile(x => x.Length > 0).Reverse().ForEachWithIndex((line, y) =>
-                                           {
-                                               line.ForEachWithIndex((cell, x) =>
-                                                                     {
-                                                                         var cellType = (CellType)cell;
-                                                                         Cell[
-                                                                             x, y
-                                                                             ] =
-                                                                             (CellType)cell;
-                                                                         switch (cellType)
-                                                                         {
-                                                                             case CellType.Robot:
-                                                                                 RobotPosition = new Point(x, y);
-                                                                                 break;
-                                                                             case CellType.Lambda:
-                                                                                 Lambdas.Add(new Point(x, y));
-                                                                                 break;
-                                                                             case CellType.Rock:
-                                                                                 Rocks.Add(new Point(x, y));
-                                                                                 break;
-                                                                             case CellType.ClosedLift:
-                                                                                 Lifts.Add(new Point(x, y));
-                                                                                 break;
-                                                                             case CellType.OpenLift:
-                                                                                 Lifts.Add(new Point(x, y));
-                                                                                 break;
-                                                                         }
+            {
+                line.ForEachWithIndex((cell, x) =>
+                {
+                    var cellType = (CellType) cell;
+                    Cell[x, y] = cellType;
 
-                                                                         if (cellType.IsTrampoline())
-                                                                         {
-                                                                             var index =
-                                                                                 trampolineMapping.FindIndex(
-                                                                                     t => t.first.first == cell);
-                                                                             if (index != -1)
-                                                                             {
-                                                                                 trampolineMapping[index].first.second = new Point(x, y);
-                                                                             }
-                                                                         }
+                    switch (cellType)
+                    {
+                        case CellType.Robot:
+                            RobotPosition = new Point(x, y);
+                            break;
+                        case CellType.Lambda:
+                            Lambdas.Add(new Point(x, y));
+                            break;
+                        case CellType.Rock:
+                            Rocks.Add(new Point(x, y));
+                            break;
+                        case CellType.ClosedLift:
+                            Lifts.Add(new Point(x, y));
+                            break;
+                        case CellType.OpenLift:
+                            Lifts.Add(new Point(x, y));
+                            break;
+                    }
 
-                                                                         if (cellType.IsPortal())
-                                                                         {
-                                                                             trampolineMapping.Where(t => t.second.first == cell).ForEachWithIndex((t, v) => t.second.second = new Point(x, y));
-                                                                         }
-                                                                     });
-                                               for (var i = line.Length; i < Width; i++)
-                                                   Cell[i, y] = CellType.Empty;
-                                           });
+                    if (cellType.IsTrampoline())
+                    {
+                        var index = trampolineMapping.FindIndex(t => t.first.first == cell);
+                        if (index != -1)
+                        {
+                            trampolineMapping[index].first.second = new Point(x, y);
+                        }
+                    }
+
+                    if (cellType.IsPortal())
+                    {
+                        trampolineMapping.Where(t => t.second.first == cell).ForEachWithIndex(
+                            (t, v) => t.second.second = new Point(x, y));
+                    }
+                });
+
+                for (var i = line.Length; i < Width; i++)
+                    Cell[i, y] = CellType.Empty;
+            });
 
             // set up trampoline map
             foreach (var mapping in trampolineMapping)
@@ -192,18 +190,18 @@ namespace LambdaLifter.Model
                 if (!(mapping.first.second.HasValue && mapping.second.second.HasValue))
                     continue;
 
-                Trampolines.Add(mapping.first.second.Value, mapping.second.second.Value);                
+                Trampolines.Add(mapping.first.second.Value, mapping.second.second.Value);
             }
         }
 
         public int AbortScore
         {
-            get { return Score + LambdasCollected * 25; }
+            get { return Score + LambdasCollected*25; }
         }
 
         public RobotCommand ExecuteTurn(RobotCommand command)
         {
-            IsChanged = false;            
+            IsChanged = false;
 
             switch (command)
             {
@@ -230,12 +228,12 @@ namespace LambdaLifter.Model
                 Score -= 1;
                 Simulate();
             }
-            
+
             return command;
         }
 
         private void MoveRobotTo(RobotCommand direction, Point destPos)
-        {            
+        {
             var destType = Cell.At(destPos);
 
             if (!destType.IsTraversible())
@@ -278,7 +276,7 @@ namespace LambdaLifter.Model
             if (destType == CellType.OpenLift)
             {
                 State = MapState.Won;
-                Score += LambdasCollected * 50;
+                Score += LambdasCollected*50;
             }
 
             if (destType.IsTrampoline())
@@ -298,7 +296,7 @@ namespace LambdaLifter.Model
             if (State != MapState.Valid)
                 return;
 
-            var newState = new CellType[Width, Height];
+            var newState = new CellType[Width,Height];
             for (var y = 0; y < Height; y++)
             {
                 for (var x = 0; x < Width; x++)
@@ -334,7 +332,7 @@ namespace LambdaLifter.Model
                                 Rocks.Remove(current);
                                 Rocks.Add(current.Right().Down());
                             }
-                            // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
+                                // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
                             else if ((!Cell.At(current.Right()).IsEmpty() || !Cell.At(current.Right().Down()).IsEmpty()) &&
                                      Cell.At(current.Left()).IsEmpty() && Cell.At(current.Left().Down()).IsEmpty())
                             {
@@ -346,7 +344,7 @@ namespace LambdaLifter.Model
                                 Rocks.Add(current.Left().Down());
                             }
                         }
-                        //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
+                            //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
                         else if (Cell.At(current.Down()).IsLambda() && Cell.At(current.Right()).IsEmpty() &&
                                  Cell.At(current.Right().Down()).IsEmpty())
                         {
@@ -388,10 +386,8 @@ namespace LambdaLifter.Model
         {
             var neighbors = new List<Point>();
 
-            if (Cell.At(point).IsTrampoline())
-            {
-                point = Trampolines[point];
-            }
+            if (Cell.At(point).IsTrampoline())            
+                point = Trampolines[point];            
 
             if (Cell.IsValidMove(point, point.Up()))
                 neighbors.Add(point.Up());

@@ -112,7 +112,7 @@ namespace LambdaLifter.Cli
                 Console.Write(map.ToString());
                 Console.WriteLine("ControllerState: {0}", controller.State);
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-                //Thread.Sleep(50);
+                //Thread.Sleep(75);
                 moves++;
             }
 

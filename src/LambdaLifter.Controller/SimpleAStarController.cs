@@ -39,6 +39,7 @@ namespace LambdaLifter.Controller
                         continue;
 
                     var score = route.Count;
+                    
                     if (routeFinder.UsesPortals)
                         score *= 1000;
                     else if (routeFinder.PushesRocks)
