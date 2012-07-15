@@ -179,7 +179,7 @@ namespace LambdaLifter.Model
             return cell >= (CellType)'A' && cell < (CellType)'I';
         }
 
-        public static bool IsPortal(this CellType cell)
+        public static bool IsTarget(this CellType cell)
         {
             return cell >= (CellType)'1' && cell <= (CellType)'9';
         }
@@ -194,10 +194,9 @@ namespace LambdaLifter.Model
             return cell.IsRock() || cell.IsLambda();
         }
 
-
         public static bool HoldsRock(this CellType cell)
         {
-            return cell.IsRock() || cell.IsTrampoline() || cell.IsPortal() || cell.IsLambda() || cell.IsRobot();
+            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot();
         }
 
         public static bool IsRobot(this CellType cell)
@@ -215,12 +214,17 @@ namespace LambdaLifter.Model
             return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot || cell == CellType.Rock || cell.IsTrampoline();
         }
 
+        public static bool IsClearable(this CellType cell)
+        {
+            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell.IsTrampoline() || cell.IsRobot();
+        }
+
         public static bool IsLeftMoveable(this CellType[,] cells, Point rock)
         {
             if (!cells.At(rock).IsRock())
                 return false;
 
-            if (!cells.At(rock.Left()).IsTraversible() || !cells.At(rock.Right()).IsTraversible())
+            if (!cells.At(rock.Left()).IsClearable() || !cells.At(rock.Right()).IsClearable())
                 return false;
 
             return true;
@@ -231,7 +235,7 @@ namespace LambdaLifter.Model
             if (!cells.At(rock).IsRock())
                 return false;
 
-            if (!cells.At(rock.Left()).IsTraversible() || !cells.At(rock.Right()).IsTraversible())
+            if (!cells.At(rock.Left()).IsClearable() || !cells.At(rock.Right()).IsClearable())
                 return false;
 
             return true;

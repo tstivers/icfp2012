@@ -46,7 +46,7 @@ namespace LambdaLifter.Controller
             var start = Map.RobotPosition;
 
             if (start == goal)
-                return null;
+                return new Queue<RobotCommand>();
 
             if (_unreachable.Contains(goal))
                 return null;

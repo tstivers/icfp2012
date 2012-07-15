@@ -67,6 +67,11 @@ namespace LambdaLifter.Model
         public int LambdasCollected { get; private set; }
         public Dictionary<Point, Point> Trampolines { get; private set; }
         public Queue<RobotCommand> Moves { get; private set; }
+        public int Water { get; private set; }
+        public int Flooding { get; private set; }
+        public int Waterproof { get; private set; }
+
+
 
         public new string ToString()
         {
@@ -74,7 +79,7 @@ namespace LambdaLifter.Model
             for (var y = 0; y < Height; y++)
             {
                 for (var x = 0; x < Width; x++)
-                    sb.Append((char)Cell[x, Height - (y + 1)]);
+                    sb.Append((char) Cell[x, Height - (y + 1)]);
 
                 sb.Append('\n');
             }
@@ -90,7 +95,7 @@ namespace LambdaLifter.Model
         {
             Lambdas = new List<Point>(map.Lambdas);
             Lifts = new List<Point>(map.Lifts);
-            Cell = new CellType[map.Cell.GetLength(0), map.Cell.GetLength(1)];
+            Cell = new CellType[map.Cell.GetLength(0),map.Cell.GetLength(1)];
             Array.Copy(map.Cell, Cell, Cell.Length);
             Width = map.Width;
             Height = map.Height;
@@ -101,6 +106,9 @@ namespace LambdaLifter.Model
             LambdasCollected = map.LambdasCollected;
             Trampolines = new Dictionary<Point, Point>(map.Trampolines);
             Moves = new Queue<RobotCommand>(map.Moves);
+            Water = map.Water;
+            Flooding = map.Flooding;
+            Waterproof = map.Waterproof;
         }
 
         public Map(string[] lines)
@@ -112,30 +120,42 @@ namespace LambdaLifter.Model
             Trampolines = new Dictionary<Point, Point>();
             Moves = new Queue<RobotCommand>();
             var trampolineMapping = new List<Pair<Pair<char, Point?>, Pair<char, Point?>>>();
+            Water = 0;
+            Flooding = 0;
+            Waterproof = 10;
 
             Height = lines.TakeWhile(x => x.Length > 0).Count();
             Width = lines.Max(x => x.Length);
-            Cell = new CellType[Width, Height];
+            Cell = new CellType[Width,Height];
 
-            var trampRegex = new Regex(@"Trampoline (.) targets (.)");
+            var parser = new Dictionary<Regex, Action<Match>>
+            {
+                {
+                    new Regex(@"Trampoline (.) targets (.)"), match => trampolineMapping.Add(
+                        new Pair<Pair<char, Point?>, Pair<char, Point?>>(
+                            new Pair<char, Point?>(match.Groups[1].Value[0], null),
+                            new Pair<char, Point?>(match.Groups[2].Value[0], null)))
+                    },
+                {new Regex(@"Water ([\d]+)"), match => Water = int.Parse(match.Groups[1].Value)},
+                {new Regex(@"Flooding ([\d]+)"), match => Flooding = int.Parse(match.Groups[1].Value)},
+                {new Regex(@"Waterproof ([\d]+)"), match => Waterproof = int.Parse(match.Groups[1].Value)}
+            };
 
             foreach (var line in lines.SkipWhile(x => x.Length > 0))
             {
-                var tm = trampRegex.Match(line);
-                if (tm.Success)
+                foreach (var setter in parser)
                 {
-                    trampolineMapping.Add(
-                        new Pair<Pair<char, Point?>, Pair<char, Point?>>(
-                            new Pair<char, Point?>(tm.Groups[1].Value[0], null),
-                            new Pair<char, Point?>(tm.Groups[2].Value[0], null)));
-                }
+                    var match = setter.Key.Match(line);
+                    if (match.Success)
+                        setter.Value(match);
+                }                    
             }
 
             lines.TakeWhile(x => x.Length > 0).Reverse().ForEachWithIndex((line, y) =>
             {
                 line.ForEachWithIndex((cell, x) =>
                 {
-                    var cellType = (CellType)cell;
+                    var cellType = (CellType) cell;
                     Cell[x, y] = cellType;
 
                     switch (cellType)
@@ -161,12 +181,10 @@ namespace LambdaLifter.Model
                     {
                         var index = trampolineMapping.FindIndex(t => t.first.first == cell);
                         if (index != -1)
-                        {
                             trampolineMapping[index].first.second = new Point(x, y);
-                        }
                     }
 
-                    if (cellType.IsPortal())
+                    if (cellType.IsTarget())
                     {
                         trampolineMapping.Where(t => t.second.first == cell).ForEachWithIndex(
                             (t, v) => t.second.second = new Point(x, y));
@@ -190,7 +208,7 @@ namespace LambdaLifter.Model
 
         public int AbortScore
         {
-            get { return Score + LambdasCollected * 25; }
+            get { return Score + LambdasCollected*25; }
         }
 
         public RobotCommand ExecuteTurn(RobotCommand command)
@@ -267,7 +285,7 @@ namespace LambdaLifter.Model
             if (destType == CellType.OpenLift)
             {
                 State = MapState.Won;
-                Score += LambdasCollected * 50;
+                Score += LambdasCollected*50;
             }
 
             if (destType.IsTrampoline())
@@ -286,7 +304,7 @@ namespace LambdaLifter.Model
             if (State != MapState.Valid)
                 return;
 
-            var newState = new CellType[Width, Height];
+            var newState = new CellType[Width,Height];
             for (var y = 0; y < Height; y++)
             {
                 for (var x = 0; x < Width; x++)
@@ -322,7 +340,7 @@ namespace LambdaLifter.Model
                                 Rocks.Remove(current);
                                 Rocks.Add(current.Right().Down());
                             }
-                            // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
+                                // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
                             else if ((!Cell.At(current.Right()).IsEmpty() || !Cell.At(current.Right().Down()).IsEmpty()) &&
                                      Cell.At(current.Left()).IsEmpty() && Cell.At(current.Left().Down()).IsEmpty())
                             {
@@ -334,7 +352,7 @@ namespace LambdaLifter.Model
                                 Rocks.Add(current.Left().Down());
                             }
                         }
-                        //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
+                            //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
                         else if (Cell.At(current.Down()).IsLambda() && Cell.At(current.Right()).IsEmpty() &&
                                  Cell.At(current.Right().Down()).IsEmpty())
                         {

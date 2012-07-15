@@ -10,36 +10,41 @@ namespace LambdaLifter.Controller
     public class SimpleAStarController : ControllerBase
     {
         public Queue<RobotCommand> CommandQueue { get; private set; }
-        public string State { get; private set; }
+        private string _state;
+        public string State
+        {
+            get { return _state; }
+            private set { _state = value; }
+        }
 
         public SimpleAStarController(Map map)
             : base(map)
         {
             CommandQueue = new Queue<RobotCommand>();
-        }      
+        }
 
         public override RobotCommand GetNextMove()
         {
             if (CommandQueue != null && CommandQueue.Count > 0 && !Map.IsChanged)
-                return CommandQueue.Dequeue();          
+                return CommandQueue.Dequeue();
 
             CommandQueue = null;
 
-            var routeFinder = new AStarRouteFinder(Map);           
+            var routeFinder = new AStarRouteFinder(Map);
 
             // first we try to get to a lambda
             if (Map.Lambdas.Count > 0)
             {
                 var routes = new Dictionary<Queue<RobotCommand>, int>();
                 foreach (var lambda in Map.Lambdas)
-                {                    
+                {
                     var route = routeFinder.GetRouteTo(lambda);
 
                     if (route == null)
                         continue;
 
                     var score = route.Count;
-                    
+
                     if (routeFinder.UsesPortals)
                         score *= 1000;
                     else if (routeFinder.PushesRocks)
@@ -56,7 +61,7 @@ namespace LambdaLifter.Controller
 
             // if all lambdas are gone, try to get to the lift
             if (Map.Lambdas.Count == 0)
-            {                
+            {
                 CommandQueue = routeFinder.GetRouteTo(Map.Lifts[0]);
                 State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);
             }
@@ -75,7 +80,7 @@ namespace LambdaLifter.Controller
 
             // try to move a rock as a last ditch effort
             if (CommandQueue == null)
-            {                
+            {
                 foreach (var rock in Map.MoveableRocks)
                 {
                     if (Map.Cell.IsValidMove(rock.Left(), rock))
@@ -83,9 +88,9 @@ namespace LambdaLifter.Controller
                         var route = routeFinder.GetRouteTo(rock.Left());
                         if (route != null)
                         {
-                            CommandQueue = route;                            
+                            CommandQueue = route;
                             CommandQueue.Enqueue(RobotCommand.Right);
-                            State = String.Format("Moving rock right at {0}", rock);                            
+                            State = String.Format("Moving rock right at {0}", rock);
                             break;
                         }
                     }
@@ -126,7 +131,13 @@ namespace LambdaLifter.Controller
                         if (route != null)
                         {
                             CommandQueue = route;
-                            State = String.Format("Clearing rock bottom at {0} : {1}", rock, rock.Down());                            
+                            if (Map.Cell.IsValidMove(rock.Down(), rock.Down().Left()))
+                                CommandQueue.Enqueue(RobotCommand.Left);
+                            else if (Map.Cell.IsValidMove(rock.Down(), rock.Down().Right()))
+                                CommandQueue.Enqueue(RobotCommand.Right);
+                            else
+                                CommandQueue = null;
+                            State = String.Format("Clearing rock bottom at {0} : {1}", rock, rock.Down());
                             break;
                         }
                     }
@@ -138,7 +149,7 @@ namespace LambdaLifter.Controller
             {
                 State = "Nothing I can do...";
                 return RobotCommand.Abort;
-            }            
+            }
 
             return CommandQueue.Dequeue();
         }

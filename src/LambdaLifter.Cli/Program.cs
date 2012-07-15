@@ -40,6 +40,9 @@ namespace LambdaLifter.Cli
             }
             else
             {
+                if (!File.Exists(args[0]))
+                    return;
+
                 mapText = File.ReadAllLines(args[0]);
             }
 
@@ -109,8 +112,7 @@ namespace LambdaLifter.Cli
                     map.ExecuteTurn(queue.Dequeue());
 
                 SafeClear();
-                Console.Write(map.ToString());
-                Console.WriteLine("ControllerState: {0}", controller.State);
+                Console.WriteLine(map.ToString());                
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
                 //Thread.Sleep(75);
                 moves++;
