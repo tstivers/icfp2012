@@ -85,8 +85,7 @@ namespace LambdaLifter.Controller
                         {
                             CommandQueue = route;                            
                             CommandQueue.Enqueue(RobotCommand.Right);
-                            State = String.Format("Moving rock right at {0}", rock);
-                            Map.Target = rock;
+                            State = String.Format("Moving rock right at {0}", rock);                            
                             break;
                         }
                     }
@@ -127,8 +126,7 @@ namespace LambdaLifter.Controller
                         if (route != null)
                         {
                             CommandQueue = route;
-                            State = String.Format("Clearing rock bottom at {0} : {1}", rock, rock.Down());
-                            Map.Target = rock.Down();
+                            State = String.Format("Clearing rock bottom at {0} : {1}", rock, rock.Down());                            
                             break;
                         }
                     }
