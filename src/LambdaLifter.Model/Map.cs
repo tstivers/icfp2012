@@ -19,6 +19,7 @@ namespace LambdaLifter.Model
         Earth = '.',
         Empty = ' ',
         Invalid = 'X',
+        Beard = 'W'
     }
 
     public enum RobotCommand
@@ -28,7 +29,8 @@ namespace LambdaLifter.Model
         Up = 'U',
         Down = 'D',
         Wait = 'W',
-        Abort = 'A'
+        Abort = 'A',
+        Shave = 'S'
     }
 
     public enum MapState
@@ -45,7 +47,7 @@ namespace LambdaLifter.Model
         public Point To { get; private set; }
 
         public InvalidMoveException(Point from, Point to)
-            : base(String.Format("Robot tried to move from {0} to {0}", from, to))
+            : base(String.Format("Robot tried to move from {0} to {1}", from, to))
         {
             From = from;
             To = to;
@@ -67,10 +69,17 @@ namespace LambdaLifter.Model
         public int LambdasCollected { get; private set; }
         public Dictionary<Point, Point> Trampolines { get; private set; }
         public Queue<RobotCommand> Moves { get; private set; }
+        
+        // flooding stuff
         public int Water { get; private set; }
         public int Flooding { get; private set; }
         public int Waterproof { get; private set; }
         public int Underwater { get; private set; }
+
+        // beard stuff
+        public int Growth { get; private set; }
+        public int Razors { get; private set; }
+        public int GrowthCount { get; private set; }
 
         public int WaterLevel
         {
@@ -78,7 +87,7 @@ namespace LambdaLifter.Model
             {
                 if (Flooding == 0 || Moves.Count <= 1)
                     return Water;
-                return Water + ((Moves.Count - 1)/Flooding);
+                return Water + ((Moves.Count - 1) / Flooding);
             }
         }
 
@@ -140,17 +149,19 @@ namespace LambdaLifter.Model
             Cell = new CellType[Width,Height];
 
             var parser = new Dictionary<Regex, Action<Match>>
-            {
-                {
-                    new Regex(@"Trampoline (.) targets (.)"), match => trampolineMapping.Add(
-                        new Pair<Pair<char, Point?>, Pair<char, Point?>>(
-                            new Pair<char, Point?>(match.Groups[1].Value[0], null),
-                            new Pair<char, Point?>(match.Groups[2].Value[0], null)))
-                    },
-                {new Regex(@"Water ([\d]+)"), match => Water = int.Parse(match.Groups[1].Value)},
-                {new Regex(@"Flooding ([\d]+)"), match => Flooding = int.Parse(match.Groups[1].Value)},
-                {new Regex(@"Waterproof ([\d]+)"), match => Waterproof = int.Parse(match.Groups[1].Value)}
-            };
+                         {
+                             {
+                                 new Regex(@"Trampoline (.) targets (.)"), match => trampolineMapping.Add(
+                                     new Pair<Pair<char, Point?>, Pair<char, Point?>>(
+                                         new Pair<char, Point?>(match.Groups[1].Value[0], null),
+                                         new Pair<char, Point?>(match.Groups[2].Value[0], null)))
+                                 },
+                             {new Regex(@"Water ([\d]+)"), match => Water = int.Parse(match.Groups[1].Value)},
+                             {new Regex(@"Flooding ([\d]+)"), match => Flooding = int.Parse(match.Groups[1].Value)},
+                             {new Regex(@"Waterproof ([\d]+)"), match => Waterproof = int.Parse(match.Groups[1].Value)},
+                             {new Regex(@"Growth ([\d]+)"), match => Growth = int.Parse(match.Groups[1].Value)},
+                             {new Regex(@"Razors ([\d]+)"), match => Razors = int.Parse(match.Groups[1].Value)},
+                         };
 
             foreach (var line in lines.SkipWhile(x => x.Length > 0))
             {

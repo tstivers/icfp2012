@@ -196,7 +196,7 @@ namespace LambdaLifter.Model
 
         public static bool HoldsRock(this CellType cell)
         {
-            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot();
+            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot() || cell.IsEarth() || cell.IsBeard();
         }
 
         public static bool IsRobot(this CellType cell)
@@ -207,6 +207,11 @@ namespace LambdaLifter.Model
         public static bool IsLambda(this CellType cell)
         {
             return cell == CellType.Lambda;
+        }
+
+        public static bool IsBeard(this CellType cell)
+        {
+            return cell == CellType.Beard;
         }
 
         public static bool IsTraversible(this CellType cell)
