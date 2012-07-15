@@ -75,6 +75,13 @@ namespace LambdaLifter.Cli
             while (tempMap.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
             {
                 queue.Enqueue(tempMap.ExecuteTurn(tempController.GetNextMove()));
+                //SafeClear();
+                //Console.WriteLine(tempMap.ToString());
+                //Console.WriteLine("MapState: {0}", tempMap.State);
+                //Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
+                //Console.WriteLine("WaterLevel: {0}", tempMap.WaterLevel);
+                //Console.WriteLine("Underwater: {0}/{1}", tempMap.Underwater, tempMap.Waterproof);
+                //Thread.Sleep(100);
                 moves++;
                 if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
                 {
@@ -89,6 +96,8 @@ namespace LambdaLifter.Cli
                     abort = false;
                 }
             }
+
+            //Console.ReadKey();
 
             if (contest)
             {
@@ -116,7 +125,7 @@ namespace LambdaLifter.Cli
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
                 Console.WriteLine("WaterLevel: {0}", map.WaterLevel);
                 Console.WriteLine("Underwater: {0}/{1}", map.Underwater, map.Waterproof);
-                //Thread.Sleep(100);
+                //Thread.Sleep(75);
                 moves++;
             }
 
@@ -127,6 +136,10 @@ namespace LambdaLifter.Cli
                 Console.WriteLine("Score: {0}", map.Score);
 
             Console.WriteLine("Best Score: {0}", bestScore);
+            Console.WriteLine();
+            foreach(var move in map.Moves)
+                Console.Write((char)move);
+            Console.WriteLine();
         }
 
         private static bool _isRedirected;

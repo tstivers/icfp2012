@@ -76,9 +76,9 @@ namespace LambdaLifter.Model
         {
             get
             {
-                if (Flooding == 0)
+                if (Flooding == 0 || Moves.Count <= 1)
                     return Water;
-                return Water + (Moves.Count/Flooding);
+                return Water + ((Moves.Count - 1)/Flooding);
             }
         }
 
@@ -296,7 +296,7 @@ namespace LambdaLifter.Model
             if (destType == CellType.OpenLift)
             {
                 State = MapState.Won;
-                Score += LambdasCollected*50;
+                Score += LambdasCollected*50 - 1; // minus one point for the final move
             }
 
             if (destType.IsTrampoline())
@@ -384,7 +384,7 @@ namespace LambdaLifter.Model
             if (RobotPosition.Y < WaterLevel)
             {
                 Underwater++;
-                if (Underwater == Waterproof)
+                if (Underwater > Waterproof)
                 {
                     State = MapState.Killed;
                 }
