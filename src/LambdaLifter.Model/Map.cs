@@ -19,7 +19,8 @@ namespace LambdaLifter.Model
         Earth = '.',
         Empty = ' ',
         Invalid = 'X',
-        Beard = 'W'
+        Beard = 'W',
+        Razor = '!'
     }
 
     public enum RobotCommand
@@ -91,6 +92,15 @@ namespace LambdaLifter.Model
             }
         }
 
+        public bool IsGrowthTurn
+        {
+            get
+            {
+                if (Moves.Count <= 1)
+                    return false;
+                return (Moves.Count % Growth) == 0;
+            }
+        }
 
         public new string ToString()
         {
@@ -129,6 +139,8 @@ namespace LambdaLifter.Model
             Flooding = map.Flooding;
             Waterproof = map.Waterproof;
             Underwater = map.Underwater;
+            Growth = map.Growth;
+            Razors = map.Razors;
         }
 
         public Map(string[] lines)
@@ -143,6 +155,7 @@ namespace LambdaLifter.Model
             Water = 0;
             Flooding = 0;
             Waterproof = 10;
+            Growth = 25;
 
             Height = lines.TakeWhile(x => x.Length > 0).Count();
             Width = lines.Max(x => x.Length);
@@ -277,15 +290,15 @@ namespace LambdaLifter.Model
             if (!destType.IsEmpty())
                 IsChanged = true;
 
-            if (destType == CellType.Rock)
+            if (destType.IsRock())
             {
-                if (direction == RobotCommand.Left && Cell.At(destPos.Left()) == CellType.Empty)
+                if (direction == RobotCommand.Left && Cell.At(destPos.Left()).IsEmpty())
                 {
                     Cell.Set(destPos.Left(), CellType.Rock);
                     Rocks.Remove(destPos);
                     Rocks.Add(destPos.Left());
                 }
-                else if (direction == RobotCommand.Right && Cell.At(destPos.Right()) == CellType.Empty)
+                else if (direction == RobotCommand.Right && Cell.At(destPos.Right()).IsEmpty())
                 {
                     Cell.Set(destPos.Right(), CellType.Rock);
                     Rocks.Remove(destPos);
@@ -297,14 +310,14 @@ namespace LambdaLifter.Model
                 }
             }
 
-            if (destType == CellType.Lambda)
+            if (destType.IsLambda())
             {
                 Lambdas.Remove(destPos);
                 Score += 25;
                 LambdasCollected++;
             }
 
-            if (destType == CellType.OpenLift)
+            if (destType.IsOpenLift())
             {
                 State = MapState.Won;
                 Score += LambdasCollected*50 - 1; // minus one point for the final move
@@ -314,6 +327,11 @@ namespace LambdaLifter.Model
             {
                 Cell.Set(destPos, CellType.Empty);
                 destPos = Trampolines[destPos];
+            }
+
+            if (destType.IsRazor())
+            {
+                Razors++;
             }
 
             Cell.Set(RobotPosition, CellType.Empty);
@@ -333,10 +351,27 @@ namespace LambdaLifter.Model
                 {
                     var current = new Point(x, y);
                     var currentType = Cell.At(current);
-                    newState.Set(current, currentType);
 
-                    if (Cell.At(current) == CellType.ClosedLift && Lambdas.Count == 0)
+                    if (newState.At(current) == 0)
+                        newState.Set(current, currentType);
+
+                    if (Cell.At(current).IsClosedLift() && Lambdas.Count == 0)
                         newState.Set(current, CellType.OpenLift);
+
+                    if (Cell.At(current).IsBeard() && IsGrowthTurn)
+                    {
+                        for (int dy = -1; dy < 2; dy++)
+                        {
+                            for (int dx = -1; dx < 2; dx++)
+                            {
+                                if (Cell.At(current.X + dx, current.Y + dy).IsEmpty())
+                                {
+                                    newState.Set(current.X + dx, current.Y + dy, CellType.Beard);
+                                    IsChanged = true;
+                                }
+                            }
+                        }
+                    }
 
                     if (Cell.At(current).IsRock())
                     {

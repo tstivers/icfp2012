@@ -81,6 +81,7 @@ namespace LambdaLifter.Cli
                 //Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
                 //Console.WriteLine("WaterLevel: {0}", tempMap.WaterLevel);
                 //Console.WriteLine("Underwater: {0}/{1}", tempMap.Underwater, tempMap.Waterproof);
+                //Console.WriteLine("GrowthTurn: {0}", tempMap.IsGrowthTurn);
                 //Thread.Sleep(100);
                 moves++;
                 if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
@@ -125,7 +126,7 @@ namespace LambdaLifter.Cli
                 Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
                 Console.WriteLine("WaterLevel: {0}", map.WaterLevel);
                 Console.WriteLine("Underwater: {0}/{1}", map.Underwater, map.Waterproof);
-                //Thread.Sleep(90);
+                Thread.Sleep(90);
                 moves++;
             }
 

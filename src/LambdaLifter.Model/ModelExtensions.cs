@@ -64,18 +64,28 @@ namespace LambdaLifter.Model
     {
         public static CellType At(this CellType[,] cells, Point point)
         {
-            if (point.X < 0 || point.Y < 0 || point.X >= cells.GetLength(0) || point.Y >= cells.GetLength(1))
+            return cells.At(point.X, point.Y);
+        }
+
+        public static CellType At(this CellType[,] cells, int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= cells.GetLength(0) || y >= cells.GetLength(1))
                 return CellType.Invalid;
 
-            return cells[point.X, point.Y];
+            return cells[x, y];
         }
 
         public static void Set(this CellType[,] cells, Point point, CellType type)
         {
-            if (point.X < 0 || point.Y < 0 || point.X >= cells.GetLength(0) || point.Y >= cells.GetLength(1))
+            cells.Set(point.X, point.Y, type);
+        }
+
+        public static void Set(this CellType[,] cells, int x, int y, CellType type)
+        {
+            if (x < 0 || y < 0 || x >= cells.GetLength(0) || y >= cells.GetLength(1))
                 throw new ArgumentException();
 
-            cells[point.X, point.Y] = type;
+            cells[x, y] = type;
         }
 
         public static bool IsValidMove(this CellType[,] cells, Point start, Point end)
@@ -196,7 +206,7 @@ namespace LambdaLifter.Model
 
         public static bool HoldsRock(this CellType cell)
         {
-            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot() || cell.IsEarth() || cell.IsBeard();
+            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot() || cell.IsEarth() || cell.IsBeard() || cell.IsRazor();
         }
 
         public static bool IsRobot(this CellType cell)
@@ -214,14 +224,29 @@ namespace LambdaLifter.Model
             return cell == CellType.Beard;
         }
 
+        public static bool IsRazor(this CellType cell)
+        {
+            return cell == CellType.Razor;
+        }        
+
         public static bool IsTraversible(this CellType cell)
         {
-            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell == CellType.OpenLift || cell == CellType.Robot || cell == CellType.Rock || cell.IsTrampoline();
+            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell == CellType.OpenLift || cell.IsRobot() || cell.IsRock() || cell.IsTrampoline() || cell.IsRazor();
         }
 
         public static bool IsClearable(this CellType cell)
         {
-            return cell == CellType.Lambda || cell == CellType.Empty || cell == CellType.Earth || cell.IsTrampoline() || cell.IsRobot();
+            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell.IsTrampoline() || cell.IsRobot() || cell.IsRazor();
+        }
+
+        public static bool IsOpenLift(this CellType cell)
+        {
+            return cell == CellType.OpenLift;
+        }
+
+        public static bool IsClosedLift(this CellType cell)
+        {
+            return cell == CellType.ClosedLift;
         }
 
         public static bool IsLeftMoveable(this CellType[,] cells, Point rock)
@@ -245,7 +270,5 @@ namespace LambdaLifter.Model
 
             return true;
         }
-
-
     }
 }
