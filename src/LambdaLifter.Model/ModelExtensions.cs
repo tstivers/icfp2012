@@ -56,7 +56,7 @@ namespace LambdaLifter.Model
             if (start.Right() == destination)
                 return RobotCommand.Right;
 
-            throw new InvalidMoveException(start, null);
+            throw new InvalidMoveException(start, destination);
         }
     }
 
@@ -73,7 +73,7 @@ namespace LambdaLifter.Model
         public static void Set(this CellType[,] cells, Point point, CellType type)
         {
             if (point.X < 0 || point.Y < 0 || point.X >= cells.GetLength(0) || point.Y >= cells.GetLength(1))
-                throw new InvalidMoveException(point, null);
+                throw new ArgumentException();
 
             cells[point.X, point.Y] = type;
         }

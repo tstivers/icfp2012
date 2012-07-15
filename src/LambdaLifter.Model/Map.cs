@@ -18,9 +18,7 @@ namespace LambdaLifter.Model
         OpenLift = 'O',
         Earth = '.',
         Empty = ' ',
-        Invalid = 'X',
-        TrampolineIn = '@',
-        TrampolineOut = '?'
+        Invalid = 'X',       
     }
 
     public enum RobotCommand
@@ -43,12 +41,14 @@ namespace LambdaLifter.Model
 
     public class InvalidMoveException : Exception
     {
-        public string MapState { get; private set; }
+        public Point From { get; private set; }
+        public Point To { get; private set; }
 
-        public InvalidMoveException(Point point, string mapState)
-            : base(String.Format("Robot tried to move to invalid point: {0}", point))
+        public InvalidMoveException(Point from, Point to)
+            : base(String.Format("Robot tried to move from {0} to {0}", from, to))
         {
-            MapState = mapState;
+            From = from;
+            To = to;
         }
     }
 
@@ -237,7 +237,7 @@ namespace LambdaLifter.Model
             var destType = Cell.At(destPos);
 
             if (!destType.IsTraversible())
-                throw new InvalidMoveException(destPos, ToString());
+                throw new InvalidMoveException(RobotPosition, destPos);
 
             if (destType == CellType.Rock)
             {
@@ -257,7 +257,7 @@ namespace LambdaLifter.Model
                 }
                 else
                 {
-                    throw new InvalidMoveException(destPos, ToString());
+                    throw new InvalidMoveException(RobotPosition, destPos);
                 }
             }
 
