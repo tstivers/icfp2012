@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region Using
+
+using System;
 using System.Drawing;
+
+#endregion
 
 namespace LambdaLifter.Model
 {
@@ -141,7 +142,7 @@ namespace LambdaLifter.Model
                 var endl = cells.At(end.Left());
 
                 // diagonals too!
-                if (endul.IsRock() && endu.IsEmptyOrRobot() && (endl.IsRock() || endl.IsLambda()))                                 
+                if (endul.IsRock() && endu.IsEmptyOrRobot() && (endl.IsRock() || endl.IsLambda()))
                     return false;
 
                 // don't unwedge when moving down
@@ -217,9 +218,9 @@ namespace LambdaLifter.Model
         public static bool MoveDisturbsBeard(this CellType[,] cells, Point end)
         {
             return cells.At(end.Up()).IsBeard() || cells.At(end.Down()).IsBeard() || cells.At(end.Left()).IsBeard() ||
-                   cells.At(end.Right()).IsBeard() ||
-                   cells.At(end.UpLeft()).IsBeard() || cells.At(end.UpRight()).IsBeard() ||
-                   cells.At(end.DownLeft()).IsBeard() || cells.At(end.DownRight()).IsBeard();
+                   cells.At(end.Right()).IsBeard() || cells.At(end.UpLeft()).IsBeard() ||
+                   cells.At(end.UpRight()).IsBeard() || cells.At(end.DownLeft()).IsBeard() ||
+                   cells.At(end.DownRight()).IsBeard();
         }
 
         public static bool IsRock(this CellType cell)

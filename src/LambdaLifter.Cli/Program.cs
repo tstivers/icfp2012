@@ -1,16 +1,21 @@
-﻿using System;
+﻿#region Using
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
-using LambdaLifter.Model;
 using LambdaLifter.Controller;
+using LambdaLifter.Model;
+
+#endregion
 
 namespace LambdaLifter.Cli
 {
     internal class Program
     {
+        private static bool _isRedirected;
+
         public static bool IsRunningOnMono()
         {
             return Type.GetType("Mono.Runtime") != null;
@@ -19,15 +24,14 @@ namespace LambdaLifter.Cli
         private static void Main(string[] args)
         {
             string[] mapText;
-            bool contest = false;
-            bool debug = false;
-            int sleep = 0;
+            var contest = false;
+            var debug = false;
+            var sleep = 0;
             const int timelimit = 140;
-            int bestTurn = 0;
-            int bestScore = 0;
-            bool abort = true;
-            var sw = new Stopwatch();
-            sw.Start();
+            var bestTurn = 0;
+            var bestScore = 0;
+            var abort = true;
+            var sw = Stopwatch.StartNew();
 
             if (args.Length < 1)
             {
@@ -57,12 +61,10 @@ namespace LambdaLifter.Cli
             }
 
             var map = new Map(mapText);
-            int maxMoves = map.Width * map.Height;
+            var maxMoves = map.Width * map.Height;
 
             if (args.Length > 2)
-            {
                 maxMoves = int.Parse(args[2]);
-            }
 
             var tempMap = map.Clone();
             var tempController = new SimpleAStarController(tempMap);
@@ -95,13 +97,11 @@ namespace LambdaLifter.Cli
 
             if (contest)
             {
-                for (int i = 0; i < bestTurn; i++)
-                {
-                    Console.Write((char)tempMap.Moves.Dequeue());
-                }
+                for (var i = 0; i < bestTurn; i++)
+                    Console.Write((char) tempMap.Moves.Dequeue());
 
                 if (abort)
-                    Console.Write((char)RobotCommand.Abort);
+                    Console.Write((char) RobotCommand.Abort);
 
                 return;
             }
@@ -123,24 +123,20 @@ namespace LambdaLifter.Cli
 
             if (!debug) // runtests
             {
-                Console.WriteLine("{0,-20}  Score: {1,5}   Moves: {2,3}   State: {3,-10}  Time: {4,3}",
-                                  Path.GetFileName(args[0]),
-                                  map.Score,
-                                  map.Moves.Count,
-                                  tempMap.State,
-                                  sw.Elapsed);
+                Console.WriteLine("{0,-20}  Score: {1,5}   Moves: {2,3}   State: {3,-7}  Time: {4,3}",
+                                  Path.GetFileName(args[0]), map.Score, map.Moves.Count, tempMap.State,
+                                  String.Format("{2:d2}:{0}.{1:d4}", sw.Elapsed.Seconds, sw.Elapsed.Milliseconds,
+                                                sw.Elapsed.Minutes));
             }
             else
             {
                 SafeClear();
                 map.DumpState();
                 foreach (var move in map.Moves)
-                    Console.Write((char)move);
+                    Console.Write((char) move);
                 Console.WriteLine();
             }
         }
-
-        private static bool _isRedirected;
 
         public static void SafeClear()
         {

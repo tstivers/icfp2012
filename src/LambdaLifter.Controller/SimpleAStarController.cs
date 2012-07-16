@@ -1,24 +1,20 @@
-﻿using System;
+﻿#region Using
+
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using LambdaLifter.Model;
+
+#endregion
 
 namespace LambdaLifter.Controller
 {
     public class SimpleAStarController : ControllerBase
     {
         public Queue<RobotCommand> CommandQueue { get; private set; }
-        private string _state;
-        public string State
-        {
-            get { return _state; }
-            private set { _state = value; }
-        }
+        public string State { get; private set; }
 
-        public SimpleAStarController(Map map)
-            : base(map)
+        public SimpleAStarController(Map map) : base(map)
         {
             CommandQueue = new Queue<RobotCommand>();
         }
@@ -53,7 +49,7 @@ namespace LambdaLifter.Controller
                     else if (routeFinder.PushesRocks)
                         score *= 100;
                     else if (routeFinder.DisturbsRocks)
-                        score *= 10;                                            
+                        score *= 10;
 
                     routes.Add(route, score);
                 }

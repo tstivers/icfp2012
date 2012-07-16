@@ -1,41 +1,30 @@
-﻿using System;
+﻿#region Using
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
+using C5;
 using LambdaLifter.Model;
+
+#endregion
 
 namespace LambdaLifter.Controller
 {
     internal class AStarRouteFinder
     {
-        public Map Map { get; private set; }
+        private readonly System.Collections.Generic.HashSet<Point> _unreachable =
+            new System.Collections.Generic.HashSet<Point>();
 
+        public Map Map { get; private set; }
         public bool UsesPortals { get; set; }
         public bool PushesRocks { get; set; }
         public bool DisturbsRocks { get; set; }
         public bool DisturbsBeard { get; set; }
 
-        private readonly HashSet<Point> _unreachable = new HashSet<Point>();
-
         public AStarRouteFinder(Map map)
         {
             Map = map;
-        }
-
-        private class PointComparer : IComparer<Point>
-        {
-            private readonly Dictionary<Point, float> _f_scores;
-
-            public PointComparer(Dictionary<Point, float> f_scores)
-            {
-                _f_scores = f_scores;
-            }
-
-            public int Compare(Point x, Point y)
-            {
-                return _f_scores[x].CompareTo(_f_scores[y]);
-            }
         }
 
         public Queue<RobotCommand> GetRouteTo(Point goal)
@@ -53,13 +42,13 @@ namespace LambdaLifter.Controller
             if (_unreachable.Contains(goal))
                 return null;
 
-            var closed_set = new HashSet<Point>();
+            var closed_set = new System.Collections.Generic.HashSet<Point>();
             var came_from = new Dictionary<Point, Point>();
-            var g_score = new Dictionary<Point, float>() {{start, 0}};
-            var f_score = new Dictionary<Point, float>() {{start, GetDistance(start, goal)}};
+            var g_score = new Dictionary<Point, float> {{start, 0}};
+            var f_score = new Dictionary<Point, float> {{start, GetDistance(start, goal)}};
             var current = start;
-            C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) {start};
-            var open_set_hash = new HashSet<Point>();
+            IPriorityQueue<Point> open_set = new IntervalHeap<Point>(new PointComparer(f_score)) {start};
+            var open_set_hash = new System.Collections.Generic.HashSet<Point>();
 
             while (!open_set.IsEmpty)
             {
@@ -74,7 +63,7 @@ namespace LambdaLifter.Controller
                         continue;
 
                     var tentative_g_score = g_score[current] + MoveCost(current, neighbor);
-                    
+
                     if (!open_set_hash.Contains(neighbor) || tentative_g_score < g_score[neighbor])
                     {
                         g_score[neighbor] = tentative_g_score;
@@ -87,10 +76,14 @@ namespace LambdaLifter.Controller
             }
 
             // fill out our unreachable points
-            for (int x = 0; x < Map.Width; x++)
-                for (int y = 0; y < Map.Height; y++)
+            for (var x = 0; x < Map.Width; x++)
+            {
+                for (var y = 0; y < Map.Height; y++)
+                {
                     if (!closed_set.Contains(new Point(x, y)))
                         _unreachable.Add(new Point(x, y));
+                }
+            }
 
             return null;
         }
@@ -130,7 +123,7 @@ namespace LambdaLifter.Controller
 
                 //if (Map.Cell.At(current).IsBeard())
                 //    path.Enqueue(RobotCommand.Shave);
-              
+
                 current = prev;
             }
 
@@ -144,5 +137,28 @@ namespace LambdaLifter.Controller
                 (Math.Sqrt(Math.Pow(Math.Abs((float) start.X - goal.X), 2) +
                            Math.Pow(Math.Abs((float) start.Y - goal.Y), 2)));
         }
+
+        #region Nested type: PointComparer
+
+        private class PointComparer : IComparer<Point>
+        {
+            private readonly Dictionary<Point, float> _f_scores;
+
+            public PointComparer(Dictionary<Point, float> f_scores)
+            {
+                _f_scores = f_scores;
+            }
+
+            #region IComparer<Point> Members
+
+            public int Compare(Point x, Point y)
+            {
+                return _f_scores[x].CompareTo(_f_scores[y]);
+            }
+
+            #endregion
+        }
+
+        #endregion
     }
 }

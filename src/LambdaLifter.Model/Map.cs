@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Drawing;
 using System.Text.RegularExpressions;
 using LambdaLifter.Utility;
 
@@ -64,7 +64,7 @@ namespace LambdaLifter.Model
         public HashSet<Point> Lifts { get; private set; }
         public HashSet<Point> Lambdas { get; private set; }
         public HashSet<Point> HoRocks { get; private set; }
-        public HashSet<Point> Razors { get; private set; } 
+        public HashSet<Point> Razors { get; private set; }
         public CellType[,] Cell { get; private set; }
         public MapState State { get; private set; }
         public bool IsChanged { get; private set; }
@@ -73,7 +73,7 @@ namespace LambdaLifter.Model
         public int LambdasCollected { get; private set; }
         public Dictionary<Point, Point> Trampolines { get; private set; }
         public Queue<RobotCommand> Moves { get; private set; }
-        
+
         // flooding stuff
         public int Water { get; private set; }
         public int Flooding { get; private set; }
@@ -105,39 +105,21 @@ namespace LambdaLifter.Model
             }
         }
 
-        public new string ToString()
+        public int LambdaCount { get { return Lambdas.Count + HoRocks.Count; } }
+
+        public int AbortScore { get { return Score + LambdasCollected * 25; } }
+
+        public HashSet<Point> MoveableRocks
         {
-            var sb = new StringBuilder();
-            for (var y = 0; y < Height; y++)
+            get
             {
-                for (var x = 0; x < Width; x++)
-                    sb.Append((char) Cell[x, Height - (y + 1)]);
-
-                sb.Append('\n');
+                var mrocs = new HashSet<Point>();
+                Rocks.Where(
+                    rock =>
+                    Cell.IsLeftMoveable(rock) || Cell.IsRightMoveable(rock) || Cell.At(rock.Down()).IsTraversible()).
+                    ForEachWithIndex((x, index) => mrocs.Add(x));
+                return mrocs;
             }
-            return sb.ToString();
-        }
-
-        public void DumpState()
-        {            
-            Console.WriteLine(ToString());
-            Console.WriteLine(String.Format("Moves: {0}/{1}", Moves.Count, Width * Height));
-            Console.WriteLine("Score: {0}", Score);                           
-            Console.WriteLine("RazorCount: {0}", RazorCount);
-            Console.WriteLine("WaterLevel: {0}", WaterLevel);
-            Console.WriteLine("Underwater: {0}/{1}", Underwater, Waterproof);
-            Console.WriteLine("MapState: {0}", State.ToString());         
-            Console.WriteLine();            
-        }
-
-        public Map Clone()
-        {
-            return new Map(this);
-        }
-
-        public int LambdaCount
-        {
-            get { return Lambdas.Count + HoRocks.Count; }
         }
 
         private Map(Map map)
@@ -188,7 +170,9 @@ namespace LambdaLifter.Model
             var parser = new Dictionary<Regex, Action<Match>>
                          {
                              {
-                                 new Regex(@"Trampoline (.) targets (.)"), match => trampolineMapping.Add(
+                                 new Regex(@"Trampoline (.) targets (.)"),
+                                 match =>
+                                 trampolineMapping.Add(
                                      new Pair<Pair<char, Point?>, Pair<char, Point?>>(
                                          new Pair<char, Point?>(match.Groups[1].Value[0], null),
                                          new Pair<char, Point?>(match.Groups[2].Value[0], null)))
@@ -200,14 +184,14 @@ namespace LambdaLifter.Model
                              {new Regex(@"Razors ([\d]+)"), match => RazorCount = int.Parse(match.Groups[1].Value)},
                          };
 
-            foreach (var line in lines.SkipWhile(x => x.Length > 0))
+            foreach (string line in lines.SkipWhile(x => x.Length > 0))
             {
                 foreach (var setter in parser)
                 {
-                    var match = setter.Key.Match(line);
+                    Match match = setter.Key.Match(line);
                     if (match.Success)
                         setter.Value(match);
-                }                    
+                }
             }
 
             lines.TakeWhile(x => x.Length > 0).Reverse().ForEachWithIndex((line, y) =>
@@ -245,19 +229,17 @@ namespace LambdaLifter.Model
 
                     if (cellType.IsTrampoline())
                     {
-                        var index = trampolineMapping.FindIndex(t => t.first.first == cell);
+                        int index = trampolineMapping.FindIndex(t => t.first.first == cell);
                         if (index != -1)
                             trampolineMapping[index].first.second = new Point(x, y);
                     }
 
                     if (cellType.IsTarget())
-                    {
                         trampolineMapping.Where(t => t.second.first == cell).ForEachWithIndex(
                             (t, v) => t.second.second = new Point(x, y));
-                    }
                 });
 
-                for (var i = line.Length; i < Width; i++)
+                for (int i = line.Length; i < Width; i++)
                     Cell[i, y] = CellType.Empty;
             });
 
@@ -272,9 +254,34 @@ namespace LambdaLifter.Model
             }
         }
 
-        public int AbortScore
+        public new string ToString()
         {
-            get { return Score + LambdasCollected*25; }
+            var sb = new StringBuilder();
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                    sb.Append((char) Cell[x, Height - (y + 1)]);
+
+                sb.Append('\n');
+            }
+            return sb.ToString();
+        }
+
+        public void DumpState()
+        {
+            Console.WriteLine(ToString());
+            Console.WriteLine(String.Format("Moves: {0}/{1}", Moves.Count, Width * Height));
+            Console.WriteLine("Score: {0}", Score);
+            Console.WriteLine("RazorCount: {0}", RazorCount);
+            Console.WriteLine("WaterLevel: {0}", WaterLevel);
+            Console.WriteLine("Underwater: {0}/{1}", Underwater, Waterproof);
+            Console.WriteLine("MapState: {0}", State.ToString());
+            Console.WriteLine();
+        }
+
+        public Map Clone()
+        {
+            return new Map(this);
         }
 
         public RobotCommand ExecuteTurn(RobotCommand command)
@@ -302,12 +309,16 @@ namespace LambdaLifter.Model
                     break;
                 case RobotCommand.Shave:
                     for (int dy = -1; dy < 2; dy++)
+                    {
                         for (int dx = -1; dx < 2; dx++)
+                        {
                             if (Cell.At(RobotPosition.X + dx, RobotPosition.Y + dy).IsBeard())
                             {
                                 Cell.Set(RobotPosition.X + dx, RobotPosition.Y + dy, CellType.Empty);
                                 IsChanged = true;
                             }
+                        }
+                    }
                     break;
             }
 
@@ -322,7 +333,7 @@ namespace LambdaLifter.Model
 
         private void MoveRobotTo(RobotCommand direction, Point destPos)
         {
-            var destType = Cell.At(destPos);
+            CellType destType = Cell.At(destPos);
 
             if (!destType.IsTraversible())
                 throw new InvalidMoveException(RobotPosition, destPos);
@@ -355,9 +366,7 @@ namespace LambdaLifter.Model
                     }
                 }
                 else
-                {
                     throw new InvalidMoveException(RobotPosition, destPos);
-                }
             }
 
             if (destType.IsLambda())
@@ -370,7 +379,7 @@ namespace LambdaLifter.Model
             if (destType.IsOpenLift())
             {
                 State = MapState.Won;
-                Score += LambdasCollected*50 - 1; // minus one point for the final move
+                Score += LambdasCollected * 50 - 1; // minus one point for the final move
             }
 
             if (destType.IsTrampoline())
@@ -389,7 +398,7 @@ namespace LambdaLifter.Model
                     }
                 }
 
-                foreach (var point in remove)
+                foreach (Point point in remove)
                     Trampolines.Remove(point);
             }
 
@@ -410,12 +419,12 @@ namespace LambdaLifter.Model
                 return;
 
             var newState = new CellType[Width,Height];
-            for (var y = 0; y < Height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (var x = 0; x < Width; x++)
+                for (int x = 0; x < Width; x++)
                 {
                     var current = new Point(x, y);
-                    var currentType = Cell.At(current);
+                    CellType currentType = Cell.At(current);
 
                     if (newState.At(current) == 0)
                         newState.Set(current, currentType);
@@ -424,15 +433,21 @@ namespace LambdaLifter.Model
                         newState.Set(current, CellType.OpenLift);
 
                     // Handle beard growth
-                    if (currentType.IsBeard() && IsGrowthTurn)                 
-                        for (int dy = -1; dy < 2; dy++)                 
-                            for (int dx = -1; dx < 2; dx++)                 
+                    if (currentType.IsBeard() && IsGrowthTurn)
+                    {
+                        for (int dy = -1; dy < 2; dy++)
+                        {
+                            for (int dx = -1; dx < 2; dx++)
+                            {
                                 if (Cell.At(current.X + dx, current.Y + dy).IsEmpty())
                                 {
                                     newState.Set(current.X + dx, current.Y + dy, CellType.Beard);
                                     IsChanged = true;
                                 }
-                 
+                            }
+                        }
+                    }
+
                     // Handle rock movement
                     if (currentType.IsRock())
                     {
@@ -448,22 +463,22 @@ namespace LambdaLifter.Model
                             if (Cell.At(current.Right()).IsEmpty() && Cell.At(current.Right().Down()).IsEmpty())
                             {
                                 // (x; y) is updated to Empty, (x + 1; y - 1) is updated to Rock
-                                MoveRock(currentType, current, current.Right().Down(), newState);                               
+                                MoveRock(currentType, current, current.Right().Down(), newState);
                             }
                                 // If (x; y) contains a Rock, (x; y - 1) contains a Rock, either (x + 1; y) is not Empty or (x + 1; y - 1) is not Empty, (x - 1; y) is Empty and (x - 1; y - 1) is Empty:
                             else if ((!Cell.At(current.Right()).IsEmpty() || !Cell.At(current.Right().Down()).IsEmpty()) &&
                                      Cell.At(current.Left()).IsEmpty() && Cell.At(current.Left().Down()).IsEmpty())
                             {
                                 // (x; y) is updated to Empty, (x - 1; y - 1) is updated to Rock
-                                MoveRock(currentType, current, current.Left().Down(), newState);                               
+                                MoveRock(currentType, current, current.Left().Down(), newState);
                             }
                         }
-                        //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
+                            //  If (x; y) contains a Rock, (x; y - 1) contains a Lambda, (x + 1; y) is Empty and (x + 1; y - 1) is Empty:
                         else if (Cell.At(current.Down()).IsLambda() && Cell.At(current.Right()).IsEmpty() &&
                                  Cell.At(current.Right().Down()).IsEmpty())
                         {
                             // (x; y) is updated to Empty, (x + 1; y  1) is updated to Rock.
-                            MoveRock(currentType, current, current.Right().Down(), newState);                         
+                            MoveRock(currentType, current, current.Right().Down(), newState);
                         }
                     }
                 }
@@ -476,14 +491,10 @@ namespace LambdaLifter.Model
             {
                 Underwater++;
                 if (Underwater > Waterproof)
-                {
                     State = MapState.Killed;
-                }
             }
             else
-            {
                 Underwater = 0;
-            }
 
             Cell = newState;
         }
@@ -546,19 +557,6 @@ namespace LambdaLifter.Model
                 neighbors.Add(point.Right());
 
             return neighbors.ToArray();
-        }
-
-        public HashSet<Point> MoveableRocks
-        {
-            get
-            {
-                var mrocs = new HashSet<Point>();
-                Rocks.Where(
-                    rock =>
-                    Cell.IsLeftMoveable(rock) || Cell.IsRightMoveable(rock) || Cell.At(rock.Down()).IsTraversible()).
-                    ForEachWithIndex((x, index) => mrocs.Add(x));
-                return mrocs;
-            }
         }
     }
 }
