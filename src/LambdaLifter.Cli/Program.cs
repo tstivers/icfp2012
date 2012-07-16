@@ -7,6 +7,8 @@ using System.IO;
 using System.Threading;
 using LambdaLifter.Controller;
 using LambdaLifter.Model;
+using Mono.Unix;
+using Mono.Unix.Native;
 
 #endregion
 
@@ -19,6 +21,18 @@ namespace LambdaLifter.Cli
         public static bool IsRunningOnMono()
         {
             return Type.GetType("Mono.Runtime") != null;
+        }
+
+        static void TerminateHandler()
+        {
+            Console.WriteLine("Initializing Handler for SIGINT");
+            UnixSignal signal = new UnixSignal(Signum.SIGINT);
+            while (signal.WaitOne(-1, false))
+            {
+                Console.WriteLine("Control-C Pressed!");
+                break;
+            }
+            Console.WriteLine("handler Terminated");
         }
 
         private static void Main(string[] args)
