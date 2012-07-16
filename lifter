@@ -1,2 +1,2 @@
 #!/bin/sh
-mono bin/LambdaLifter.Cli.exe
+exec mono bin/LambdaLifter.Cli.exe
