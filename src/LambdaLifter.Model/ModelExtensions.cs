@@ -130,6 +130,15 @@ namespace LambdaLifter.Model
                 if (cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Up().Up()).IsRock())
                     return false;
 
+                // check for horocks
+                if (cells.At(end.Up()).IsHoRock())
+                {
+                    // check diagonals again
+                    if (cells.At(end.Up().Left()).IsRockOrLambda() && cells.At(end.Up().Left().Up()).IsRock() && cells.At(end.Up().Up()).IsEmpty())
+                        return false;                    
+
+                }
+
                 if (cells.At(end.Up()).IsRock() && !cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
                     return false;
 
