@@ -48,7 +48,7 @@ namespace LambdaLifter.Model
             return new Point(point.X + 1, point.Y - 1);
         }
 
-    public static Point Move(this Point point, RobotCommand direction)
+        public static Point Move(this Point point, RobotCommand direction)
         {
             switch (direction)
             {
@@ -110,64 +110,76 @@ namespace LambdaLifter.Model
 
         public static bool IsValidMove(this CellType[,] cells, Point start, Point end)
         {
-            if (!cells.At(start).IsTraversible())
+            var startType = cells.At(start);
+            var endType = cells.At(end);
+
+            if (!startType.IsTraversible())
                 return false;
 
-            if (cells.At(end).IsTraversible())
+            if (endType.IsTraversible())
             {
+                var endu = cells.At(end.Up());
+
                 // don't let rocks fall on us
-                if (cells.At(end).IsEmpty() && cells.At(end.Up()).IsRock())
+                if (endType.IsEmpty() && endu.IsRock())
                     return false;
+
+                var startu = cells.At(start.Up());
 
                 // even if we're moving down
-                if (cells.At(start.Up()).IsRock() && start.Down() == end)
+                if (startu.IsRock() && start.Down() == end)
                     return false;
+
+                var endur = cells.At(end.UpRight());
+                var endr = cells.At(end.Right());
 
                 // diagonals too!
-                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Right()).IsRock())
+                if (endur.IsRock() && endu.IsEmptyOrRobot() && endr.IsRock())
                     return false;
+
+                var endul = cells.At(end.UpLeft());
+                var endl = cells.At(end.Left());
 
                 // diagonals too!
-                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot() && (cells.At(end.Left()).IsRock() || cells.At(end.Left()).IsLambda()))
-                {
-                    if (!cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
-                        return false;
-
+                if (endul.IsRock() && endu.IsEmptyOrRobot() && (endl.IsRock() || endl.IsLambda()))                                 
                     return false;
-                }
 
                 // don't unwedge when moving down
                 if (start.Down() == end)
                 {
-                    if (cells.At(start.Up().Right()).IsRock() && cells.At(start.Up()).IsEmptyOrRobot() && cells.At(start.Right()).IsRock())
+                    var startur = cells.At(start.UpRight());
+                    var startr = cells.At(start.Right());
+                    if (startur.IsRock() && startu.IsEmptyOrRobot() && startr.IsRock())
                         return false;
 
-                    if (cells.At(start.Up().Left()).IsRock() && cells.At(start.Up()).IsEmptyOrRobot() && (cells.At(start.Left()).IsRock() || cells.At(start.Left()).IsLambda()))
+                    var startul = cells.At(start.UpLeft());
+                    var startl = cells.At(start.Left());
+                    if (startul.IsRock() && startu.IsEmptyOrRobot() && (startl.IsRock() || startl.IsLambda()))
                         return false;
                 }
 
                 // don't let crap fall on you if you can't get away
-                if (cells.At(end.Up()).IsEmptyOrRobot() && cells.At(end.Up().Up()).IsRock())
+                if (endu.IsEmptyOrRobot() && cells.At(end.Up().Up()).IsRock())
                     return false;
 
                 // check for horocks
-                if (cells.At(end.Up()).IsHoRock())
+                if (endu.IsHoRock())
                 {
                     // check diagonals again
-                    if (cells.At(end.Up().Left()).IsRockOrLambda() && cells.At(end.Up().Left().Up()).IsRock() && cells.At(end.Up().Up()).IsEmpty())
-                        return false;                    
-
+                    if (endul.IsRockOrLambda() && cells.At(end.UpLeft().Up()).IsRock() &&
+                        cells.At(end.Up().Up()).IsEmpty())
+                        return false;
                 }
 
-                if (cells.At(end.Up()).IsRock() && !cells.At(end.Left()).IsTraversible() && !cells.At(end.Right()).IsTraversible())
+                if (endu.IsRock() && !endl.IsTraversible() && !endr.IsTraversible())
                     return false;
 
-                if (cells.At(end).IsRock())
+                if (endType.IsRock())
                 {
                     //return false;
-                    if (start.Right() == end && !cells.At(end.Right()).IsEmpty())
+                    if (start.Right() == end && !endr.IsEmpty())
                         return false;
-                    if (start.Left() == end && !cells.At(end.Left()).IsEmpty())
+                    if (start.Left() == end && !endl.IsEmpty())
                         return false;
                     if (start.Right() != end && start.Left() != end)
                         return false;
@@ -180,7 +192,7 @@ namespace LambdaLifter.Model
         }
 
         public static bool MoveDisturbsRock(this CellType[,] cells, Point end)
-        {               
+        {
             var endType = cells.At(end);
             if (endType.IsRock())
                 return true;
@@ -190,10 +202,12 @@ namespace LambdaLifter.Model
                 if (cells.At(end.Up()).IsRock())
                     return true;
 
-                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Right()).IsRock() && cells.At(end.Up()).IsEmptyOrRobot())
+                if (cells.At(end.Up().Right()).IsRock() && cells.At(end.Right()).IsRock() &&
+                    cells.At(end.Up()).IsEmptyOrRobot())
                     return true;
 
-                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Left()).IsRockOrLambda() && cells.At(end.Up()).IsEmptyOrRobot())
+                if (cells.At(end.Up().Left()).IsRock() && cells.At(end.Left()).IsRockOrLambda() &&
+                    cells.At(end.Up()).IsEmptyOrRobot())
                     return true;
             }
 
@@ -230,12 +244,12 @@ namespace LambdaLifter.Model
 
         public static bool IsTrampoline(this CellType cell)
         {
-            return cell >= (CellType)'A' && cell < (CellType)'I';
+            return cell >= (CellType) 'A' && cell < (CellType) 'I';
         }
 
         public static bool IsTarget(this CellType cell)
         {
-            return cell >= (CellType)'1' && cell <= (CellType)'9';
+            return cell >= (CellType) '1' && cell <= (CellType) '9';
         }
 
         public static bool IsEmptyOrRobot(this CellType cell)
@@ -250,7 +264,8 @@ namespace LambdaLifter.Model
 
         public static bool HoldsRock(this CellType cell)
         {
-            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot() || cell.IsEarth() || cell.IsBeard() || cell.IsRazor();
+            return cell.IsRock() || cell.IsTrampoline() || cell.IsTarget() || cell.IsLambda() || cell.IsRobot() ||
+                   cell.IsEarth() || cell.IsBeard() || cell.IsRazor();
         }
 
         public static bool IsRobot(this CellType cell)
@@ -271,16 +286,18 @@ namespace LambdaLifter.Model
         public static bool IsRazor(this CellType cell)
         {
             return cell == CellType.Razor;
-        }        
+        }
 
         public static bool IsTraversible(this CellType cell)
         {
-            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell == CellType.OpenLift || cell.IsRobot() || cell.IsRock() || cell.IsTrampoline() || cell.IsRazor() || cell.IsTarget();
+            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell == CellType.OpenLift || cell.IsRobot() ||
+                   cell.IsRock() || cell.IsTrampoline() || cell.IsRazor() || cell.IsTarget();
         }
 
         public static bool IsClearable(this CellType cell)
         {
-            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell.IsTrampoline() || cell.IsRobot() || cell.IsRazor();
+            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell.IsTrampoline() || cell.IsRobot() ||
+                   cell.IsRazor();
         }
 
         public static bool IsOpenLift(this CellType cell)

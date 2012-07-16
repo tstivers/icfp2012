@@ -59,6 +59,7 @@ namespace LambdaLifter.Controller
             var f_score = new Dictionary<Point, float>() {{start, GetDistance(start, goal)}};
             var current = start;
             C5.IPriorityQueue<Point> open_set = new C5.IntervalHeap<Point>(new PointComparer(f_score)) {start};
+            var open_set_hash = new HashSet<Point>();
 
             while (!open_set.IsEmpty)
             {
@@ -73,14 +74,13 @@ namespace LambdaLifter.Controller
                         continue;
 
                     var tentative_g_score = g_score[current] + MoveCost(current, neighbor);
-
-                    var temp = neighbor;
-                    var temp1 = temp;
-                    if (!open_set.Find(x => x.Equals(temp1), out temp) || tentative_g_score < g_score[neighbor])
+                    
+                    if (!open_set_hash.Contains(neighbor) || tentative_g_score < g_score[neighbor])
                     {
                         g_score[neighbor] = tentative_g_score;
                         f_score[neighbor] = g_score[neighbor] + GetDistance(neighbor, goal);
                         open_set.Add(neighbor);
+                        open_set_hash.Add(neighbor);
                         came_from[neighbor] = current;
                     }
                 }

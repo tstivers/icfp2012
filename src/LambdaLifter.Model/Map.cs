@@ -61,9 +61,9 @@ namespace LambdaLifter.Model
         public int Width { get; private set; }
         public int Height { get; private set; }
         public Point RobotPosition { get; private set; }
-        public List<Point> Lifts { get; private set; }
-        public List<Point> Lambdas { get; private set; }
-        public List<Point> HoRocks { get; private set; }
+        public HashSet<Point> Lifts { get; private set; }
+        public HashSet<Point> Lambdas { get; private set; }
+        public HashSet<Point> HoRocks { get; private set; }
         public HashSet<Point> Razors { get; private set; } 
         public CellType[,] Cell { get; private set; }
         public MapState State { get; private set; }
@@ -142,9 +142,9 @@ namespace LambdaLifter.Model
 
         private Map(Map map)
         {
-            Lambdas = new List<Point>(map.Lambdas);
-            HoRocks = new List<Point>(map.HoRocks);
-            Lifts = new List<Point>(map.Lifts);
+            Lambdas = new HashSet<Point>(map.Lambdas);
+            HoRocks = new HashSet<Point>(map.HoRocks);
+            Lifts = new HashSet<Point>(map.Lifts);
             Cell = new CellType[map.Cell.GetLength(0),map.Cell.GetLength(1)];
             Array.Copy(map.Cell, Cell, Cell.Length);
             Width = map.Width;
@@ -168,9 +168,9 @@ namespace LambdaLifter.Model
         public Map(string[] lines)
         {
             State = MapState.Valid;
-            Lambdas = new List<Point>();
-            HoRocks = new List<Point>();
-            Lifts = new List<Point>();
+            Lambdas = new HashSet<Point>();
+            HoRocks = new HashSet<Point>();
+            Lifts = new HashSet<Point>();
             Rocks = new HashSet<Point>();
             Razors = new HashSet<Point>();
             Trampolines = new Dictionary<Point, Point>();

@@ -47,6 +47,8 @@ namespace LambdaLifter.Controller
 
                     if (Map.Flooding > 0) // flooding, favor lower lambdas
                         score += lambda.Y * 10;
+
+
                     
                     if (routeFinder.UsesPortals)
                         score *= 1000;
@@ -65,8 +67,8 @@ namespace LambdaLifter.Controller
             // if all lambdas are gone, try to get to the lift
             if (Map.LambdaCount == 0)
             {
-                CommandQueue = routeFinder.GetRouteTo(Map.Lifts[0]);
-                State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);
+                CommandQueue = routeFinder.GetRouteTo(Map.Lifts.ElementAt(0));
+                State = String.Format("Navigating to lift at {0}", Map.Lifts.ElementAt(0));
             }
 
             // can't get lambas or a lift, wait for falling rocks to stop
