@@ -53,8 +53,8 @@ namespace LambdaLifter.Cli
             }
             else
             {
-                var handler = new Thread(WinTermHandler);
-                handler.Start();
+                //var handler = new Thread(WinTermHandler);
+                //handler.Start();
             }
 
             string[] mapText;
@@ -106,7 +106,7 @@ namespace LambdaLifter.Cli
             var signal = new UnixSignal(Signum.SIGINT);
 
             while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
-                   tempMap.Moves.Count < maxMoves && !signal.WaitOne(0))
+                   tempMap.Moves.Count < maxMoves && !signal.WaitOne(0, false))
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
                 if (debug)
