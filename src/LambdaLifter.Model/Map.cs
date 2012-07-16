@@ -115,6 +115,17 @@ namespace LambdaLifter.Model
             return sb.ToString();
         }
 
+        public void DumpState()
+        {            
+            Console.WriteLine(ToString());
+            Console.WriteLine(String.Format("Moves: {0}/{1}", Moves.Count, Width * Height));
+            Console.WriteLine("Score: {0}", Score);                           
+            Console.WriteLine("WaterLevel: {0}", WaterLevel);
+            Console.WriteLine("Underwater: {0}/{1}", Underwater, Waterproof);
+            Console.WriteLine("MapState: {0}", State.ToString());         
+            Console.WriteLine();            
+        }
+
         public Map Clone()
         {
             return new Map(this);

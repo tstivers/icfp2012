@@ -9,21 +9,25 @@ using LambdaLifter.Controller;
 
 namespace LambdaLifter.Cli
 {
-    class Program
+    internal class Program
     {
         public static bool IsRunningOnMono()
         {
             return Type.GetType("Mono.Runtime") != null;
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             string[] mapText;
             bool contest = false;
-            int timelimit = 140;
+            bool debug = false;
+            int sleep = 0;
+            const int timelimit = 140;
             int bestTurn = 0;
             int bestScore = 0;
             bool abort = true;
+            var sw = new Stopwatch();
+            sw.Start();
 
             if (args.Length < 1)
             {
@@ -46,14 +50,11 @@ namespace LambdaLifter.Cli
                 mapText = File.ReadAllLines(args[0]);
             }
 
-            TextWriter outfile = null;
             if (args.Length > 1)
             {
-                outfile = new StreamWriter(args[1]);
+                debug = true;
+                sleep = int.Parse(args[1]);
             }
-
-            if (!contest)
-                timelimit = 30;
 
             var map = new Map(mapText);
             int maxMoves = map.Width * map.Height;
@@ -63,36 +64,22 @@ namespace LambdaLifter.Cli
                 maxMoves = int.Parse(args[2]);
             }
 
-            var controller = new SimpleAStarController(map);
-            var sw = new Stopwatch();
-            sw.Start();            
-
-            var queue = new Queue<RobotCommand>();
-            int moves = 0;
             var tempMap = map.Clone();
             var tempController = new SimpleAStarController(tempMap);
 
-            while (tempMap.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 && moves + 1 < maxMoves)
+            while (tempMap.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 &&
+                   tempMap.Moves.Count < maxMoves)
             {
-                queue.Enqueue(tempMap.ExecuteTurn(tempController.GetNextMove()));
-                //SafeClear();
-                //Console.WriteLine(tempMap.ToString());
-                //Console.WriteLine("MapState: {0}", tempMap.State);
-                //Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-                //Console.WriteLine("WaterLevel: {0}", tempMap.WaterLevel);
-                //Console.WriteLine("Underwater: {0}/{1}", tempMap.Underwater, tempMap.Waterproof);
-                //Console.WriteLine("GrowthTurn: {0}", tempMap.IsGrowthTurn);
-                //Thread.Sleep(100);
-                moves++;
+                tempMap.ExecuteTurn(tempController.GetNextMove());
+
                 if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
                 {
-                    bestTurn = moves;
+                    bestTurn = tempMap.Moves.Count;
                     bestScore = tempMap.AbortScore;
-                    //Console.WriteLine(tempMap.AbortScore);
                 }
                 else if (tempMap.State == MapState.Won && tempMap.Score > bestScore)
                 {
-                    bestTurn = moves;
+                    bestTurn = tempMap.Moves.Count;
                     bestScore = tempMap.Score;
                     abort = false;
                 }
@@ -104,43 +91,46 @@ namespace LambdaLifter.Cli
             {
                 for (int i = 0; i < bestTurn; i++)
                 {
-                    Console.Write((char)queue.Dequeue());
+                    Console.Write((char)tempMap.Moves.Dequeue());
                 }
 
-                if(abort)
+                if (abort)
                     Console.Write((char)RobotCommand.Abort);
-                
+
                 return;
             }
 
-            moves = 0;
-            while (map.State == MapState.Valid && moves <= bestTurn)
+            while (map.State == MapState.Valid && map.Moves.Count <= bestTurn)
             {
-                if (moves == bestTurn && abort)
+                if (map.Moves.Count == bestTurn && abort)
                     map.ExecuteTurn(RobotCommand.Abort);
                 else
-                    map.ExecuteTurn(queue.Dequeue());
+                    map.ExecuteTurn(tempMap.Moves.Dequeue());
 
-                SafeClear();
-                Console.WriteLine(map.ToString());                
-                Console.WriteLine("Moves: {0}/{1}", moves, map.Width * map.Height);
-                Console.WriteLine("WaterLevel: {0}", map.WaterLevel);
-                Console.WriteLine("Underwater: {0}/{1}", map.Underwater, map.Waterproof);
-                //Thread.Sleep(90);
-                moves++;
+                if (debug)
+                {
+                    SafeClear();
+                    map.DumpState();
+                    Thread.Sleep(sleep);
+                }
             }
 
-            Console.WriteLine("MapState: {0}", map.State);
-            if (Regex.IsMatch(args[0], @"tests(\\|/)"))
-                Console.WriteLine("score (test): {0}", map.Score);
+            if (!debug) // runtests
+            {
+                Console.WriteLine("{0,-20}  Score: {1,5}   Moves: {2,3}   State: {3}",
+                                  Path.GetFileName(args[0]),
+                                  map.Score,
+                                  map.Moves.Count,
+                                  map.State);
+            }
             else
-                Console.WriteLine("Score: {0}", map.Score);
-
-            Console.WriteLine("Best Score: {0}", bestScore);
-            Console.WriteLine();
-            foreach(var move in map.Moves)
-                Console.Write((char)move);
-            Console.WriteLine();
+            {
+                SafeClear();
+                map.DumpState();
+                foreach (var move in map.Moves)
+                    Console.Write((char)move);
+                Console.WriteLine();
+            }
         }
 
         private static bool _isRedirected;
