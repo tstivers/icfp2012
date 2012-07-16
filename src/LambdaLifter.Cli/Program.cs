@@ -38,11 +38,22 @@ namespace LambdaLifter.Cli
             }           
         }
 
+        static void WinTermHandler()
+        {
+            Thread.Sleep(2000);
+            _stop.Set();
+        }
+
         private static void Main(string[] args)
         {
             if (IsRunningOnMono())
             {
-                var handler = new Thread(TerminateHandler);
+                //var handler = new Thread(TerminateHandler);
+               // handler.Start();
+            }
+            else
+            {
+                var handler = new Thread(WinTermHandler);
                 handler.Start();
             }
 
@@ -92,8 +103,10 @@ namespace LambdaLifter.Cli
             var tempMap = map.Clone();
             var tempController = new SimpleAStarController(tempMap);
 
+            var signal = new UnixSignal(Signum.SIGINT);
+
             while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
-                   tempMap.Moves.Count < maxMoves && !_stop.WaitOne(0))
+                   tempMap.Moves.Count < maxMoves && !signal.WaitOne(0))
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
                 if (debug)
