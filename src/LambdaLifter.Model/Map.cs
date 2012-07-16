@@ -63,7 +63,8 @@ namespace LambdaLifter.Model
         public Point RobotPosition { get; private set; }
         public List<Point> Lifts { get; private set; }
         public List<Point> Lambdas { get; private set; }
-        public List<Point> HoRocks { get; private set; } 
+        public List<Point> HoRocks { get; private set; }
+        public HashSet<Point> Razors { get; private set; } 
         public CellType[,] Cell { get; private set; }
         public MapState State { get; private set; }
         public bool IsChanged { get; private set; }
@@ -81,7 +82,7 @@ namespace LambdaLifter.Model
 
         // beard stuff
         public int Growth { get; private set; }
-        public int Razors { get; private set; }
+        public int RazorCount { get; private set; }
         public int GrowthCount { get; private set; }
 
         public int WaterLevel
@@ -122,6 +123,7 @@ namespace LambdaLifter.Model
             Console.WriteLine(ToString());
             Console.WriteLine(String.Format("Moves: {0}/{1}", Moves.Count, Width * Height));
             Console.WriteLine("Score: {0}", Score);                           
+            Console.WriteLine("RazorCount: {0}", RazorCount);
             Console.WriteLine("WaterLevel: {0}", WaterLevel);
             Console.WriteLine("Underwater: {0}/{1}", Underwater, Waterproof);
             Console.WriteLine("MapState: {0}", State.ToString());         
@@ -159,6 +161,7 @@ namespace LambdaLifter.Model
             Waterproof = map.Waterproof;
             Underwater = map.Underwater;
             Growth = map.Growth;
+            RazorCount = map.RazorCount;
             Razors = map.Razors;
         }
 
@@ -169,6 +172,7 @@ namespace LambdaLifter.Model
             HoRocks = new List<Point>();
             Lifts = new List<Point>();
             Rocks = new HashSet<Point>();
+            Razors = new HashSet<Point>();
             Trampolines = new Dictionary<Point, Point>();
             Moves = new Queue<RobotCommand>();
             var trampolineMapping = new List<Pair<Pair<char, Point?>, Pair<char, Point?>>>();
@@ -193,7 +197,7 @@ namespace LambdaLifter.Model
                              {new Regex(@"Flooding ([\d]+)"), match => Flooding = int.Parse(match.Groups[1].Value)},
                              {new Regex(@"Waterproof ([\d]+)"), match => Waterproof = int.Parse(match.Groups[1].Value)},
                              {new Regex(@"Growth ([\d]+)"), match => Growth = int.Parse(match.Groups[1].Value)},
-                             {new Regex(@"Razors ([\d]+)"), match => Razors = int.Parse(match.Groups[1].Value)},
+                             {new Regex(@"Razors ([\d]+)"), match => RazorCount = int.Parse(match.Groups[1].Value)},
                          };
 
             foreach (var line in lines.SkipWhile(x => x.Length > 0))
@@ -233,6 +237,9 @@ namespace LambdaLifter.Model
                             break;
                         case CellType.OpenLift:
                             Lifts.Add(new Point(x, y));
+                            break;
+                        case CellType.Razor:
+                            Razors.Add(new Point(x, y));
                             break;
                     }
 
@@ -292,6 +299,15 @@ namespace LambdaLifter.Model
                 case RobotCommand.Abort:
                     State = MapState.Aborted;
                     Score = AbortScore;
+                    break;
+                case RobotCommand.Shave:
+                    for (int dy = -1; dy < 2; dy++)
+                        for (int dx = -1; dx < 2; dx++)
+                            if (Cell.At(RobotPosition.X + dx, RobotPosition.Y + dy).IsBeard())
+                            {
+                                Cell.Set(RobotPosition.X + dx, RobotPosition.Y + dy, CellType.Empty);
+                                IsChanged = true;
+                            }
                     break;
             }
 
@@ -379,7 +395,8 @@ namespace LambdaLifter.Model
 
             if (destType.IsRazor())
             {
-                Razors++;
+                RazorCount++;
+                Razors.Remove(destPos);
             }
 
             Cell.Set(RobotPosition, CellType.Empty);
@@ -407,21 +424,15 @@ namespace LambdaLifter.Model
                         newState.Set(current, CellType.OpenLift);
 
                     // Handle beard growth
-                    if (currentType.IsBeard() && IsGrowthTurn)
-                    {
-                        for (int dy = -1; dy < 2; dy++)
-                        {
-                            for (int dx = -1; dx < 2; dx++)
-                            {
+                    if (currentType.IsBeard() && IsGrowthTurn)                 
+                        for (int dy = -1; dy < 2; dy++)                 
+                            for (int dx = -1; dx < 2; dx++)                 
                                 if (Cell.At(current.X + dx, current.Y + dy).IsEmpty())
                                 {
                                     newState.Set(current.X + dx, current.Y + dy, CellType.Beard);
                                     IsChanged = true;
                                 }
-                            }
-                        }
-                    }
-
+                 
                     // Handle rock movement
                     if (currentType.IsRock())
                     {

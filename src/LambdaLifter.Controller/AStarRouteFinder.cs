@@ -14,6 +14,7 @@ namespace LambdaLifter.Controller
         public bool UsesPortals { get; set; }
         public bool PushesRocks { get; set; }
         public bool DisturbsRocks { get; set; }
+        public bool DisturbsBeard { get; set; }
 
         private readonly HashSet<Point> _unreachable = new HashSet<Point>();
 
@@ -42,6 +43,7 @@ namespace LambdaLifter.Controller
             PushesRocks = false;
             DisturbsRocks = false;
             UsesPortals = false;
+            DisturbsBeard = false;
 
             var start = Map.RobotPosition;
 
@@ -95,7 +97,7 @@ namespace LambdaLifter.Controller
 
         private float MoveCost(Point current, Point neighbor)
         {
-            if (Map.Cell.MoveDisturbsRock(current, neighbor))
+            if (Map.Cell.MoveDisturbsRock(neighbor))
                 return 1000;
 
             //if (Map.Cell.At(neighbor).IsEarth())
@@ -112,21 +114,10 @@ namespace LambdaLifter.Controller
             {
                 var prev = came_from[current];
 
-                if (Map.Cell.At(prev).IsRock())
-                {
-                    DisturbsRocks = true;
-                    PushesRocks = true;
-                }
-
-                if (Map.Cell.MoveDisturbsRock(prev, current))
-                {
-                    DisturbsRocks = true;
-                }
-
-                if (Map.Cell.At(prev).IsTrampoline())
-                {
-                    UsesPortals = true;
-                }
+                PushesRocks = PushesRocks || Map.Cell.At(prev).IsRock();
+                DisturbsRocks = DisturbsRocks || PushesRocks || Map.Cell.MoveDisturbsRock(current);
+                UsesPortals = UsesPortals || Map.Cell.At(prev).IsTrampoline();
+                //DisturbsBeard = DisturbsBeard || Map.Cell.MoveDisturbsBeard(current);              
 
                 if (prev.Up() == current)
                     path.Enqueue(RobotCommand.Up);
@@ -136,11 +127,10 @@ namespace LambdaLifter.Controller
                     path.Enqueue(RobotCommand.Left);
                 else if (prev.Right() == current)
                     path.Enqueue(RobotCommand.Right);
-                else
-                {
-                    // assume we came through a portal
-                    //throw new InvalidMoveException(prev, null);
-                }
+
+                //if (Map.Cell.At(current).IsBeard())
+                //    path.Enqueue(RobotCommand.Shave);
+              
                 current = prev;
             }
 

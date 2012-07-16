@@ -28,7 +28,27 @@ namespace LambdaLifter.Model
             return new Point(point.X, point.Y - 1);
         }
 
-        public static Point Move(this Point point, RobotCommand direction)
+        public static Point UpLeft(this Point point)
+        {
+            return new Point(point.X - 1, point.Y + 1);
+        }
+
+        public static Point UpRight(this Point point)
+        {
+            return new Point(point.X + 1, point.Y + 1);
+        }
+
+        public static Point DownLeft(this Point point)
+        {
+            return new Point(point.X - 1, point.Y - 1);
+        }
+
+        public static Point DownRight(this Point point)
+        {
+            return new Point(point.X + 1, point.Y - 1);
+        }
+
+    public static Point Move(this Point point, RobotCommand direction)
         {
             switch (direction)
             {
@@ -159,9 +179,8 @@ namespace LambdaLifter.Model
             return false;
         }
 
-        public static bool MoveDisturbsRock(this CellType[,] cells, Point start, Point end)
-        {
-            var startType = cells.At(start);    
+        public static bool MoveDisturbsRock(this CellType[,] cells, Point end)
+        {               
             var endType = cells.At(end);
             if (endType.IsRock())
                 return true;
@@ -179,6 +198,14 @@ namespace LambdaLifter.Model
             }
 
             return false;
+        }
+
+        public static bool MoveDisturbsBeard(this CellType[,] cells, Point end)
+        {
+            return cells.At(end.Up()).IsBeard() || cells.At(end.Down()).IsBeard() || cells.At(end.Left()).IsBeard() ||
+                   cells.At(end.Right()).IsBeard() ||
+                   cells.At(end.UpLeft()).IsBeard() || cells.At(end.UpRight()).IsBeard() ||
+                   cells.At(end.DownLeft()).IsBeard() || cells.At(end.DownRight()).IsBeard();
         }
 
         public static bool IsRock(this CellType cell)
