@@ -31,13 +31,14 @@ namespace LambdaLifter.Cli
         static void TerminateHandler()
         {
             Console.WriteLine("Initializing Handler for SIGINT");
-            UnixSignal signal = new UnixSignal(Signum.SIGINT);
-           
-                while (!signal.WaitOne(100, false))
-                {
-                    Console.WriteLine("Control-C Pressed!");
-                    _stop.Set();
-                }           
+            var signal = new UnixSignal(Signum.SIGINT);
+            Console.WriteLine("Handler created for SIGINT");
+
+            while (!signal.WaitOne(100, false))
+            {
+                Console.WriteLine("Control-C Pressed!");
+                _stop.Set();
+            }           
 
             Console.WriteLine("handler Terminated");
         }
