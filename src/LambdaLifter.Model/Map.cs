@@ -63,7 +63,7 @@ namespace LambdaLifter.Model
         public Point RobotPosition { get; private set; }
         public List<Point> Lifts { get; private set; }
         public List<Point> Lambdas { get; private set; }
-        public List<Point> HoLambdas { get; private set; } 
+        public List<Point> HoRocks { get; private set; } 
         public CellType[,] Cell { get; private set; }
         public MapState State { get; private set; }
         public bool IsChanged { get; private set; }
@@ -135,13 +135,13 @@ namespace LambdaLifter.Model
 
         public int LambdaCount
         {
-            get { return Lambdas.Count + HoLambdas.Count; }
+            get { return Lambdas.Count + HoRocks.Count; }
         }
 
         private Map(Map map)
         {
             Lambdas = new List<Point>(map.Lambdas);
-            HoLambdas = new List<Point>(map.HoLambdas);
+            HoRocks = new List<Point>(map.HoRocks);
             Lifts = new List<Point>(map.Lifts);
             Cell = new CellType[map.Cell.GetLength(0),map.Cell.GetLength(1)];
             Array.Copy(map.Cell, Cell, Cell.Length);
@@ -166,7 +166,7 @@ namespace LambdaLifter.Model
         {
             State = MapState.Valid;
             Lambdas = new List<Point>();
-            HoLambdas = new List<Point>();
+            HoRocks = new List<Point>();
             Lifts = new List<Point>();
             Rocks = new HashSet<Point>();
             Trampolines = new Dictionary<Point, Point>();
@@ -226,7 +226,7 @@ namespace LambdaLifter.Model
                             break;
                         case CellType.HoRock:
                             Rocks.Add(new Point(x, y));
-                            HoLambdas.Add(new Point(x, y));
+                            HoRocks.Add(new Point(x, y));
                             break;
                         case CellType.ClosedLift:
                             Lifts.Add(new Point(x, y));
@@ -318,15 +318,25 @@ namespace LambdaLifter.Model
             {
                 if (direction == RobotCommand.Left && Cell.At(destPos.Left()).IsEmpty())
                 {
-                    Cell.Set(destPos.Left(), CellType.Rock);
+                    Cell.Set(destPos.Left(), destType);
                     Rocks.Remove(destPos);
                     Rocks.Add(destPos.Left());
+                    if (destType.IsHoRock())
+                    {
+                        HoRocks.Remove(destPos);
+                        HoRocks.Add(destPos.Left());
+                    }
                 }
                 else if (direction == RobotCommand.Right && Cell.At(destPos.Right()).IsEmpty())
                 {
-                    Cell.Set(destPos.Right(), CellType.Rock);
+                    Cell.Set(destPos.Right(), destType);
                     Rocks.Remove(destPos);
                     Rocks.Add(destPos.Right());
+                    if (destType.IsHoRock())
+                    {
+                        HoRocks.Remove(destPos);
+                        HoRocks.Add(destPos.Right());
+                    }
                 }
                 else
                 {
@@ -476,6 +486,7 @@ namespace LambdaLifter.Model
             {
                 newState.Set(destination, CellType.Lambda);
                 Lambdas.Add(destination);
+                HoRocks.Remove(current);
             }
             else
             {

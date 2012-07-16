@@ -89,9 +89,7 @@ namespace LambdaLifter.Cli
                     bestScore = tempMap.Score;
                     abort = false;
                 }
-            }
-
-            //Console.ReadKey();
+            }            
 
             if (contest)
             {
@@ -113,12 +111,12 @@ namespace LambdaLifter.Cli
                 else
                     map.ExecuteTurn(tempMap.Moves.Dequeue());
 
-                if (debug)
-                {
-                    SafeClear();
-                    map.DumpState();
-                    Thread.Sleep(sleep);
-                }
+                //if (debug)
+                //{
+                //    SafeClear();
+                //    map.DumpState();
+                //    Thread.Sleep(sleep);
+                //}
             }
 
             if (!debug) // runtests
@@ -127,7 +125,7 @@ namespace LambdaLifter.Cli
                                   Path.GetFileName(args[0]),
                                   map.Score,
                                   map.Moves.Count,
-                                  map.State);
+                                  tempMap.State);
             }
             else
             {

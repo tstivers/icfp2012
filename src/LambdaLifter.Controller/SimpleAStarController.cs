@@ -45,12 +45,15 @@ namespace LambdaLifter.Controller
 
                     var score = route.Count;
 
+                    if (Map.Flooding > 0) // flooding, favor lower lambdas
+                        score += lambda.Y * 10;
+                    
                     if (routeFinder.UsesPortals)
                         score *= 1000;
                     else if (routeFinder.PushesRocks)
                         score *= 100;
                     else if (routeFinder.DisturbsRocks)
-                        score *= 10;
+                        score *= 10;                                            
 
                     routes.Add(route, score);
                 }
