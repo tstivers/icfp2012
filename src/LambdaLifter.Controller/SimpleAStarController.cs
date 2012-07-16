@@ -48,8 +48,6 @@ namespace LambdaLifter.Controller
                     if (Map.Flooding > 0) // flooding, favor lower lambdas
                         score += lambda.Y * 10;
 
-
-                    
                     if (routeFinder.UsesPortals)
                         score *= 1000;
                     else if (routeFinder.PushesRocks)

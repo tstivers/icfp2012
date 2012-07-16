@@ -89,7 +89,9 @@ namespace LambdaLifter.Cli
                     bestScore = tempMap.Score;
                     abort = false;
                 }
-            }            
+            }
+
+            sw.Stop();
 
             if (contest)
             {
@@ -121,11 +123,12 @@ namespace LambdaLifter.Cli
 
             if (!debug) // runtests
             {
-                Console.WriteLine("{0,-20}  Score: {1,5}   Moves: {2,3}   State: {3}",
+                Console.WriteLine("{0,-20}  Score: {1,5}   Moves: {2,3}   State: {3,-10}  Time: {4,3}",
                                   Path.GetFileName(args[0]),
                                   map.Score,
                                   map.Moves.Count,
-                                  tempMap.State);
+                                  tempMap.State,
+                                  sw.Elapsed);
             }
             else
             {

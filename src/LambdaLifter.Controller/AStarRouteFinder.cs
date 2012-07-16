@@ -98,7 +98,7 @@ namespace LambdaLifter.Controller
         private float MoveCost(Point current, Point neighbor)
         {
             if (Map.Cell.MoveDisturbsRock(neighbor))
-                return 1000;
+                return 100;
 
             //if (Map.Cell.At(neighbor).IsEarth())
             //    return 10;
