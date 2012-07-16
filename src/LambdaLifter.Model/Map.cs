@@ -73,6 +73,7 @@ namespace LambdaLifter.Model
         public int LambdasCollected { get; private set; }
         public Dictionary<Point, Point> Trampolines { get; private set; }
         public Queue<RobotCommand> Moves { get; private set; }
+        public Dictionary<Point, List<Point>> NeighborCache { get; private set; }
 
         // flooding stuff
         public int Water { get; private set; }
@@ -145,6 +146,7 @@ namespace LambdaLifter.Model
             Growth = map.Growth;
             RazorCount = map.RazorCount;
             Razors = map.Razors;
+            NeighborCache = new Dictionary<Point, List<Point>>();
         }
 
         public Map(string[] lines)
@@ -157,6 +159,7 @@ namespace LambdaLifter.Model
             Razors = new HashSet<Point>();
             Trampolines = new Dictionary<Point, Point>();
             Moves = new Queue<RobotCommand>();
+            NeighborCache = new Dictionary<Point, List<Point>>();
             var trampolineMapping = new List<Pair<Pair<char, Point?>, Pair<char, Point?>>>();
             Water = 0;
             Flooding = 0;
@@ -288,6 +291,7 @@ namespace LambdaLifter.Model
         {
             IsChanged = false;
             Moves.Enqueue(command);
+            NeighborCache.Clear();
 
             switch (command)
             {
@@ -539,10 +543,15 @@ namespace LambdaLifter.Model
 
         public Point[] Neighbors(Point point)
         {
-            var neighbors = new List<Point>();
 
             if (Cell.At(point).IsTrampoline())
                 point = Trampolines[point];
+
+            List<Point> neighbors;
+            if(NeighborCache.TryGetValue(point, out neighbors))
+                return neighbors.ToArray();
+
+            neighbors = new List<Point>();
 
             if (Cell.IsValidMove(point, point.Up()))
                 neighbors.Add(point.Up());
@@ -555,6 +564,8 @@ namespace LambdaLifter.Model
 
             if (Cell.IsValidMove(point, point.Right()))
                 neighbors.Add(point.Right());
+
+            NeighborCache.Add(point, neighbors);
 
             return neighbors.ToArray();
         }
