@@ -33,7 +33,7 @@ namespace LambdaLifter.Cli
             Console.WriteLine("Initializing Handler for SIGINT");
             UnixSignal signal = new UnixSignal(Signum.SIGINT);
            
-                while (!signal.WaitOne(100, false) && !_done)
+                while (!signal.WaitOne(100, false))
                 {
                     Console.WriteLine("Control-C Pressed!");
                     _stop.Set();
@@ -44,8 +44,11 @@ namespace LambdaLifter.Cli
 
         private static void Main(string[] args)
         {
-            var handler = new Thread(TerminateHandler);
-            handler.Start();
+            if (IsRunningOnMono())
+            {
+                var handler = new Thread(TerminateHandler);
+                handler.Start();
+            }
 
             string[] mapText;
             var contest = false;
