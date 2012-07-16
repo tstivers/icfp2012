@@ -23,15 +23,20 @@ namespace LambdaLifter.Cli
             return Type.GetType("Mono.Runtime") != null;
         }
 
+        private static bool _done;
+        private static bool _signaled;
+
         static void TerminateHandler()
         {
             Console.WriteLine("Initializing Handler for SIGINT");
             UnixSignal signal = new UnixSignal(Signum.SIGINT);
-            while (signal.WaitOne(-1, false))
-            {
-                Console.WriteLine("Control-C Pressed!");
-                break;
-            }
+           
+                while (!signal.WaitOne(100, false) && !_done)
+                {
+                    Console.WriteLine("Control-C Pressed!");                    
+                    _signaled = true;
+                }           
+
             Console.WriteLine("handler Terminated");
         }
 
@@ -87,7 +92,7 @@ namespace LambdaLifter.Cli
             var tempController = new SimpleAStarController(tempMap);
 
             while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
-                   tempMap.Moves.Count < maxMoves)
+                   tempMap.Moves.Count < maxMoves && !_signaled)
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
                 if (debug)
@@ -111,7 +116,7 @@ namespace LambdaLifter.Cli
             }
 
             sw.Stop();
-            handler.Interrupt();
+            _done = true;
 
             if (contest)
             {
