@@ -26,6 +26,8 @@ namespace LambdaLifter.Cli
         private static bool _done;
         private static volatile bool _signaled;
 
+        private static ManualResetEvent _stop = new ManualResetEvent(false);
+
         static void TerminateHandler()
         {
             Console.WriteLine("Initializing Handler for SIGINT");
@@ -33,8 +35,8 @@ namespace LambdaLifter.Cli
            
                 while (!signal.WaitOne(100, false) && !_done)
                 {
-                    Console.WriteLine("Control-C Pressed!");                    
-                    _signaled = true;
+                    Console.WriteLine("Control-C Pressed!");
+                    _stop.Set();
                 }           
 
             Console.WriteLine("handler Terminated");
@@ -92,7 +94,7 @@ namespace LambdaLifter.Cli
             var tempController = new SimpleAStarController(tempMap);
 
             while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
-                   tempMap.Moves.Count < maxMoves && !_signaled)
+                   tempMap.Moves.Count < maxMoves && !_stop.WaitOne(0))
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
                 if (debug)
