@@ -37,6 +37,8 @@ namespace LambdaLifter.Cli
 
         private static void Main(string[] args)
         {
+            new Thread(TerminateHandler).Start();
+
             string[] mapText;
             var contest = false;
             var debug = false;
