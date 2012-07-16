@@ -23,40 +23,8 @@ namespace LambdaLifter.Cli
             return Type.GetType("Mono.Runtime") != null;
         }
 
-        private static bool _done;
-        private static volatile bool _signaled;
-
-        private static ManualResetEvent _stop = new ManualResetEvent(false);
-
-        static void TerminateHandler()
-        {            
-            var signal = new UnixSignal(Signum.SIGINT);            
-
-            while (!signal.WaitOne(100, false))
-            {                
-                _stop.Set();
-            }           
-        }
-
-        static void WinTermHandler()
-        {
-            Thread.Sleep(2000);
-            _stop.Set();
-        }
-
         private static void Main(string[] args)
         {
-            if (IsRunningOnMono())
-            {
-                //var handler = new Thread(TerminateHandler);
-               // handler.Start();
-            }
-            else
-            {
-                //var handler = new Thread(WinTermHandler);
-                //handler.Start();
-            }
-
             string[] mapText;
             var contest = false;
             var debug = false;
@@ -103,10 +71,12 @@ namespace LambdaLifter.Cli
             var tempMap = map.Clone();
             var tempController = new SimpleAStarController(tempMap);
 
-            var signal = new UnixSignal(Signum.SIGINT);
+            UnixSignal sigint = null;
+            if (IsRunningOnMono())
+                sigint = new UnixSignal(Signum.SIGINT);
 
             while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
-                   tempMap.Moves.Count < maxMoves && !signal.IsSet)
+                   tempMap.Moves.Count < maxMoves && (sigint == null || !sigint.IsSet))
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
                 if (debug)
@@ -130,7 +100,6 @@ namespace LambdaLifter.Cli
             }
 
             sw.Stop();
-            _done = true;
 
             if (contest)
             {
