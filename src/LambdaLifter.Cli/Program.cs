@@ -29,18 +29,13 @@ namespace LambdaLifter.Cli
         private static ManualResetEvent _stop = new ManualResetEvent(false);
 
         static void TerminateHandler()
-        {
-            Console.WriteLine("Initializing Handler for SIGINT");
-            var signal = new UnixSignal(Signum.SIGINT);
-            Console.WriteLine("Handler created for SIGINT");
+        {            
+            var signal = new UnixSignal(Signum.SIGINT);            
 
             while (!signal.WaitOne(100, false))
-            {
-                Console.WriteLine("Control-C Pressed!");
+            {                
                 _stop.Set();
             }           
-
-            Console.WriteLine("handler Terminated");
         }
 
         private static void Main(string[] args)
