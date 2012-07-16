@@ -37,7 +37,8 @@ namespace LambdaLifter.Cli
 
         private static void Main(string[] args)
         {
-            new Thread(TerminateHandler).Start();
+            var handler = new Thread(TerminateHandler);
+            handler.Start();
 
             string[] mapText;
             var contest = false;
@@ -110,6 +111,7 @@ namespace LambdaLifter.Cli
             }
 
             sw.Stop();
+            handler.Interrupt();
 
             if (contest)
             {
