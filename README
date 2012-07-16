@@ -17,6 +17,40 @@ robot doesn't shave.
 
 All code was developed by me except for the Priority Queue (I used the C5 collections library)
 
+To see an ASCII simulation of the solver, run the following from the shell (the '75' is the redraw
+speed of the console in ms):
+
+mono bin/LambdaLifter.Cli.exe maps/contest10.map 75
+
+My final scores for the contest maps are:
+
+beard1.map            Score:   571   Moves:  30   State: Aborted  Time: 00:0.0334
+beard2.map            Score:  2811   Moves: 190   State: Killed   Time: 00:4.0634
+beard3.map            Score:   912   Moves:  39   State: Aborted  Time: 00:0.0447
+beard4.map            Score:  1906   Moves: 195   State: Aborted  Time: 00:0.0826
+beard5.map            Score:   657   Moves:  44   State: Aborted  Time: 00:0.0205
+contest1.map          Score:   212   Moves:  13   State: Won      Time: 00:0.0106
+contest10.map         Score:  3534   Moves: 291   State: Won      Time: 00:12.0902
+contest2.map          Score:   143   Moves:   8   State: Aborted  Time: 00:0.0105
+contest3.map          Score:   275   Moves:  25   State: Won      Time: 00:0.0108
+contest4.map          Score:   561   Moves:  39   State: Won      Time: 00:0.0116
+contest5.map          Score:   841   Moves:  60   State: Aborted  Time: 00:0.0195
+contest6.map          Score:  1163   Moves: 112   State: Won      Time: 00:0.0327
+contest7.map          Score:   867   Moves:  33   State: Won      Time: 00:0.0111
+contest8.map          Score:  1129   Moves: 122   State: Aborted  Time: 00:2.0003
+contest9.map          Score:  1758   Moves: 143   State: Aborted  Time: 00:0.0970
+flood1.map            Score:   569   Moves:  32   State: Killed   Time: 00:0.0159
+flood2.map            Score:    37   Moves:  14   State: Aborted  Time: 00:0.0117
+flood3.map            Score:   845   Moves:  56   State: Killed   Time: 00:0.0222
+flood4.map            Score:   716   Moves: 135   State: Killed   Time: 00:3.0094
+flood5.map            Score:   561   Moves:  39   State: Won      Time: 00:0.0131
+horock1.map           Score:   730   Moves:  95   State: Won      Time: 00:0.0167
+horock2.map           Score:   235   Moves:  16   State: Killed   Time: 00:0.0126
+horock3.map           Score:  1480   Moves: 171   State: Aborted  Time: 00:0.0428
+trampoline1.map       Score:   290   Moves:  11   State: Aborted  Time: 00:0.0149
+trampoline2.map       Score:   238   Moves:  13   State: Aborted  Time: 00:0.0161
+trampoline3.map       Score:  3502   Moves: 299   State: Aborted  Time: 00:31.0177
+
 Thanks to:
 
 Niels Kokholm and Peter Sestoft for the excellent C5 collections library (http://www.itu.dk/research/c5/)
