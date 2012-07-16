@@ -24,7 +24,7 @@ namespace LambdaLifter.Cli
         }
 
         private static bool _done;
-        private static bool _signaled;
+        private static volatile bool _signaled;
 
         static void TerminateHandler()
         {
