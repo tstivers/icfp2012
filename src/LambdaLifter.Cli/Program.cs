@@ -67,10 +67,16 @@ namespace LambdaLifter.Cli
             var tempMap = map.Clone();
             var tempController = new SimpleAStarController(tempMap);
 
-            while (tempMap.State == MapState.Valid && sw.ElapsedMilliseconds < timelimit * 1000 &&
+            while (tempMap.State == MapState.Valid && (debug || sw.ElapsedMilliseconds < timelimit * 1000) &&
                    tempMap.Moves.Count < maxMoves)
             {
                 tempMap.ExecuteTurn(tempController.GetNextMove());
+                if (debug)
+                {
+                    SafeClear();
+                    tempMap.DumpState();
+                    Thread.Sleep(sleep);
+                }
 
                 if (tempMap.AbortScore > bestScore && tempMap.State == MapState.Valid)
                 {

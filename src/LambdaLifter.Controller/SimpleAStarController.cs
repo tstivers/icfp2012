@@ -33,7 +33,7 @@ namespace LambdaLifter.Controller
             var routeFinder = new AStarRouteFinder(Map);
 
             // first we try to get to a lambda
-            if (Map.Lambdas.Count > 0)
+            if (Map.LambdaCount > 0)
             {
                 var routes = new Dictionary<Queue<RobotCommand>, int>();
                 foreach (var lambda in Map.Lambdas)
@@ -60,7 +60,7 @@ namespace LambdaLifter.Controller
             }
 
             // if all lambdas are gone, try to get to the lift
-            if (Map.Lambdas.Count == 0)
+            if (Map.LambdaCount == 0)
             {
                 CommandQueue = routeFinder.GetRouteTo(Map.Lifts[0]);
                 State = String.Format("Navigating to lift at {0}", Map.Lifts[0]);

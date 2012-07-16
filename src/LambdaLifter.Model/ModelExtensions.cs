@@ -90,6 +90,9 @@ namespace LambdaLifter.Model
 
         public static bool IsValidMove(this CellType[,] cells, Point start, Point end)
         {
+            if (!cells.At(start).IsTraversible())
+                return false;
+
             if (cells.At(end).IsTraversible())
             {
                 // don't let rocks fall on us
@@ -171,7 +174,12 @@ namespace LambdaLifter.Model
 
         public static bool IsRock(this CellType cell)
         {
-            return cell == CellType.Rock;
+            return cell == CellType.Rock || cell.IsHoRock();
+        }
+
+        public static bool IsHoRock(this CellType cell)
+        {
+            return cell == CellType.HoRock;
         }
 
         public static bool IsEarth(this CellType cell)
@@ -231,7 +239,7 @@ namespace LambdaLifter.Model
 
         public static bool IsTraversible(this CellType cell)
         {
-            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell == CellType.OpenLift || cell.IsRobot() || cell.IsRock() || cell.IsTrampoline() || cell.IsRazor();
+            return cell.IsLambda() || cell.IsEmpty() || cell.IsEarth() || cell == CellType.OpenLift || cell.IsRobot() || cell.IsRock() || cell.IsTrampoline() || cell.IsRazor() || cell.IsTarget();
         }
 
         public static bool IsClearable(this CellType cell)
