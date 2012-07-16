@@ -327,6 +327,20 @@ namespace LambdaLifter.Model
             {
                 Cell.Set(destPos, CellType.Empty);
                 destPos = Trampolines[destPos];
+
+                // remove all trampolines that have the same target
+                var remove = new List<Point>();
+                foreach (var trampoline in Trampolines)
+                {
+                    if (trampoline.Value == destPos)
+                    {
+                        Cell.Set(trampoline.Key, CellType.Empty);
+                        remove.Add(trampoline.Key);
+                    }
+                }
+
+                foreach (var point in remove)
+                    Trampolines.Remove(point);
             }
 
             if (destType.IsRazor())
